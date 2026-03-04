@@ -31,12 +31,15 @@ class BudgetSerializer(serializers.ModelSerializer):
 
 class ExpenseSerializer(serializers.ModelSerializer):
     employee_name = serializers.CharField(source='employee.full_name', read_only=True)
-    balance = serializers.DecimalField(max_digits=14, decimal_places=2, read_only=True, source='amount')
+    status_label = serializers.CharField(source='get_status_display', read_only=True)
+    account_name = serializers.CharField(source='account.name', read_only=True)
+    approved_by_name = serializers.CharField(source='approved_by.full_name', read_only=True)
 
     class Meta:
         model = Expense
         fields = [
-            'id', 'title', 'account', 'employee', 'employee_name',
-            'amount', 'date', 'receipt', 'status', 'approved_by',
+            'id', 'title', 'account', 'account_name', 'employee', 'employee_name',
+            'amount', 'date', 'receipt', 'status', 'status_label', 'approved_by',
+            'approved_by_name',
         ]
         read_only_fields = ['status', 'approved_by']
