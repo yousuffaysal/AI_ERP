@@ -1,0 +1,37 @@
+# Root-level .gitignore for AI_ERP
+# The core/  app has its own .gitignore — this one covers the workspace root
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.Python
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Environment secrets (NEVER commit these)
+.env
+*.env
+!.env.example
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+*.log
+logs/
+
+# Test artefacts
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Antigravity AI assistant brain directory (local only)
+.gemini/
