@@ -34,3 +34,4 @@ docker-compose up --build -d
 - [Tutorial 2: Multi-tenant Architecture](docs/tutorial_2.md)
 - [Tutorial 3: Inventory & Migrations](docs/tutorial_3.md)
 - [Tutorial 4: Sales & Billing](docs/tutorial_4.md)
+- [Tutorial 5: Microservices & AI Score Engine](docs/tutorial_5.md)
