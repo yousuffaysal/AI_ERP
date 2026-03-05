@@ -1,45 +1,36 @@
-# AI_ERP
+# AI ERP Platform
 
-A **production-ready Django REST API** for an ERP system, built with multi-tenant architecture, JWT authentication, and modular domain apps.
+A modern, multi-tenant Enterprise Resource Planning system with built-in AI forecasting and analytics.
 
-## Project Structure
+## Architecture
 
-```
-AI_ERP/
-└── core/               ← Main Django project
-    ├── apps/           ← Business domain apps
-    │   ├── accounts/   ← Users, Companies, JWT auth
-    │   ├── inventory/  ← Products, Warehouses, Stock
-    │   ├── sales/      ← Customers, Orders, Invoices
-    │   ├── hr/         ← Employees, Departments, Leave
-    │   ├── finance/    ← Accounts, Transactions, Budgets
-    │   └── audit/      ← Immutable audit trail
-    ├── config/         ← Django settings, URLs, Celery
-    ├── utils/          ← Shared models, mixins, middleware
-    ├── Dockerfile
-    ├── docker-compose.yml
-    └── requirements.txt
+```text
+ai-erp-platform/
+│
+├── frontend/        ← React / Next.js (App Router, Tailwind, Zustand)
+├── backend/         ← Django REST Framework (Core API, Multi-tenancy)
+├── ai-service/      ← FastAPI (ML models, Forecasting, Anomaly Detection)
+├── docker/          ← Docker configuration overrides
+└── docs/            ← Tutorials and architecture decisions
 ```
 
-## Quick Start
+## Quick Start (Docker)
 
+1. Clone the repository
+2. Set up environment variables (copy `.env.example` to `backend/.env`)
+3. Run the full stack:
 ```bash
-cd core
-cp .env.example .env      # Fill in your DB credentials
-docker-compose up --build
+docker-compose up --build -d
 ```
 
-API Docs: **http://localhost:8000/api/v1/docs/**
+### Services
+- Frontend: `http://localhost:3000`
+- Backend API (Swagger): `http://localhost:8000/api/v1/docs/`
+- AI Service API (Swagger): `http://localhost:8001/docs/`
 
-## Tech Stack
+## Development Guides
 
-- **Django 5** + **Django REST Framework**
-- **PostgreSQL** + **Redis** + **Celery**
-- **JWT** authentication (SimpleJWT)
-- **Multi-tenant** isolation via Company model
-- **Docker** + **docker-compose**
-
-## Tutorials
-
-- [`core/tutorial_1.md`](core/tutorial_1.md) — Project setup, models, ViewSets, Docker
-- [`core/tutorial_2.md`](core/tutorial_2.md) — Multi-tenant Company implementation
+- [Tutorial 1: Project Setup & User Auth](docs/tutorial_1.md)
+- [Tutorial 2: Multi-tenant Architecture](docs/tutorial_2.md)
+- [Tutorial 3: Inventory & Migrations](docs/tutorial_3.md)
+- [Tutorial 4: Sales & Billing](docs/tutorial_4.md)
