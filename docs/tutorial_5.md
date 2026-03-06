@@ -109,3 +109,36 @@ In this step we learned:
 - **Database Sharing**: How microservices can safely share an aggregate PostgreSQL database for extreme read performance.
 - **Asynchronous SQLAlchemy**: Fixing the `greenlet` dependency error to run non-blocking queries with `asyncpg`.
 - **Business Intelligence Logic**: Translating raw operational data tables into executive-level KPIs (Turnover, Cash Flow, Growth).
+
+---
+
+## Part 3: Predictive ML Models (Phase 2)
+
+Alongside the Business Health engine, we built 3 distinct Predictive Machine Learning capabilities directly into the FastAPI `ai-service`. These utilize Python's world-class data science ecosystem (`scikit-learn`, `pandas`, `numpy`, `statsmodels`).
+
+### 1. Demand Forecasting
+**Endpoint:** `POST /api/v1/forecast/demand`
+**Library:** `statsmodels.tsa.arima.model.ARIMA`
+
+Analyzes historical sales volume to predict future needs.
+- **Model:** ARIMA (AutoRegressive Integrated Moving Average).
+- **Process:** Ingests raw sales dictionaries, converts them to a Pandas time-series DatetimeIndex, and fits an ARIMA(1,1,1) model. 
+- **Output:** Returns a day-by-day forecasted demand, total aggregate demand over the period, a statistical confidence interval, and a suggested restock quantity (Predicted Demand minus Current Stock).
+
+### 2. Anomaly Detection
+**Endpoint:** `POST /api/v1/anomalies/detect`
+**Library:** `sklearn.ensemble.IsolationForest`
+
+Unsupervised machine learning designed to flag outliers in any time-series data without requiring labeled examples—useful for catching fraudulent expenses, sudden traffic drops, or inventory shrink.
+- **Model:** Isolation Forest.
+- **Process:** Feeds a 2D array of metrics into the forest. Data points that require the fewest splits to isolate are flagged as anomalies (`-1`).
+- **Output:** An array of the specific timestamps flagged as anomalous, complete with a severity `anomaly_score`.
+
+### 3. Price Optimization
+**Endpoint:** `POST /api/v1/pricing/optimize`
+**Library:** `sklearn.preprocessing.PolynomialFeatures` & `LinearRegression`
+
+Calculates the exact theoretical price point that maximizes total revenue based on historical demand elasticity.
+- **Model:** Degree-2 Polynomial Regression representing a downward-sloping Demand Curve.
+- **Process:** Maps historical Price vs. Quantity Sold points. Generates 1,000 theoretical price variations. Multiplies Price × Predicted Quantity to calculate Projected Revenue for each point. Matches the absolute maximum revenue via `numpy.argmax`.
+- **Output:** The exact optimal price (e.g., $10.44), the predicted units sold at that price, and the maximum achievable revenue.
