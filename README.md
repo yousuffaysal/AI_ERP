@@ -9,6 +9,8 @@
 ![Celery](https://img.shields.io/badge/celery-5.6.2-lightgreen.svg)
 ![Docker](https://img.shields.io/badge/docker-ready-blue.svg)
 
+![Enterprise AI ERP Architecture](docs/assets/architecture.jpg)
+
 Welcome to the **Enterprise AI ERP Platform**. This project bridges the gap between traditional business operations software and next-generation Machine Learning capabilities. 
 
 Built as a highly scalable microservice architecture, it combines the battle-tested reliability of a **Django REST API** with the asynchronous data-science firepower of **FastAPI, Scikit-Learn, and StatsModels**. 
