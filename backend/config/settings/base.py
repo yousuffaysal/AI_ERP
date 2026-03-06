@@ -568,3 +568,18 @@ LOGGING = {
         },
     },
 }
+
+# ---------------------------------------------------------------------------
+# Caching Configuration (Redis)
+# ---------------------------------------------------------------------------
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": env("REDIS_URL", default="redis://localhost:6379/1"),
+    }
+}
+
+# ---------------------------------------------------------------------------
+# AI Microservice URL
+# ---------------------------------------------------------------------------
+AI_SERVICE_URL = env("AI_SERVICE_URL", default="http://localhost:8001")
