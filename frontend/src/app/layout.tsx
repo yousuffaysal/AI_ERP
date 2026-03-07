@@ -5,16 +5,20 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-    title: "AI ERP Platform",
-    description: "Intelligent Enterprise Resource Planning",
+    title: "Core ERP | AI Powered Operations",
+    description: "Enterprise Resource Planning system enhanced with Machine Learning.",
 };
 
 export default function RootLayout({
     children,
-}: Readonly<{ children: React.ReactNode }>) {
+}: Readonly<{
+    children: React.ReactNode;
+}>) {
     return (
-        <html lang="en">
-            <body className={inter.className}>{children}</body>
+        <html lang="en" className="bg-slate-50">
+            <body className={`${inter.className} text-slate-900 antialiased`}>
+                {children}
+            </body>
         </html>
     );
 }
