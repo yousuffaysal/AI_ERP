@@ -116,10 +116,11 @@ class SalesOrderWriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = SalesOrder
         fields = [
-            'order_number', 'customer',
+            'id', 'order_number', 'customer',
             'order_date', 'delivery_date', 'notes',
             'discount', 'tax_rate',
         ]
+        read_only_fields = ['id']
 
     def validate_discount(self, value):
         if not (0 <= value <= 100):
@@ -262,18 +263,21 @@ class InvoiceSerializer(serializers.ModelSerializer):
 class InvoiceWriteSerializer(serializers.ModelSerializer):
     """
     Write serializer for DRAFT invoice creation and editing.
-    Once confirmed, invoices should not be edited via API.
+    Supports nested items for atomic creation.
     """
+    items = InvoiceItemSerializer(many=True, required=False)
 
     class Meta:
         model = Invoice
         fields = [
-            'invoice_number', 'reference',
+            'id', 'invoice_number', 'reference',
             'customer', 'order',
             'issue_date', 'due_date',
             'discount_rate', 'tax_rate', 'tax_label',
             'notes', 'terms',
+            'items',
         ]
+        read_only_fields = ['id']
 
     def validate_discount_rate(self, value):
         if not (0 <= value <= 100):
@@ -288,3 +292,42 @@ class InvoiceWriteSerializer(serializers.ModelSerializer):
                 'due_date': 'Due date cannot be before issue date.'
             })
         return attrs
+
+    def create(self, validated_data):
+        items_data = validated_data.pop('items', [])
+        invoice = Invoice.objects.create(**validated_data)
+        
+        for item_data in items_data:
+            # Add company and created_by from the invoice context
+            InvoiceItem.objects.create(
+                invoice=invoice,
+                company=invoice.company,
+                created_by=invoice.created_by,
+                **item_data
+            )
+        
+        # Calculate totals immediately after creation
+        invoice._calculate_totals()
+        invoice.save(update_fields=['subtotal', 'discount_amount', 'tax_amount', 'amount_due', 'amount_paid'])
+        return invoice
+
+    def update(self, instance, validated_data):
+        items_data = validated_data.pop('items', None)
+        instance = super().update(instance, validated_data)
+
+        if items_data is not None:
+            # Handle item updates: for simplicity in DRAFT mode, we replace items.
+            # In a more complex system, we'd match by ID.
+            if instance.status == instance.Status.DRAFT:
+                instance.items.all().delete()
+                for item_data in items_data:
+                    InvoiceItem.objects.create(
+                        invoice=instance,
+                        company=instance.company,
+                        created_by=instance.created_by,
+                        **item_data
+                    )
+            
+        instance._calculate_totals()
+        instance.save()
+        return instance

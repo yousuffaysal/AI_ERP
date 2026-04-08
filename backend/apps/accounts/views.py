@@ -100,6 +100,16 @@ class CompanyViewSet(ModelViewSet):
     filterset_fields = ['is_active', 'subscription_plan']
     ordering_fields = ['name', 'created_at']
 
+    @action(detail=True, methods=['get'])
+    def health(self, request, pk=None):
+        from asgiref.sync import async_to_sync
+        from django.conf import settings
+        from utils.ai_client import AIClient
+        company = self.get_object()
+        client = AIClient()
+        health_data = async_to_sync(client.get_health_score)(company.id)
+        return Response(health_data)
+
 
 # ---------------------------------------------------------------------------
 # User ViewSet

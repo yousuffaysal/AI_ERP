@@ -1,6 +1,7 @@
 # Tutorial 3 — Inventory Module, GitHub, Migrations & PostgreSQL
 
 > **What we cover in this tutorial:**
+>
 > 1. Building a production-grade Inventory module following SOLID principles
 > 2. Pushing the entire project to GitHub with meaningful commit messages
 > 3. Generating Django migrations for all 6 apps
@@ -49,12 +50,12 @@ apps/inventory/models.py      ← Had Category, Unit, Product, Warehouse, Stock,
 
 That's fine for a prototype, but for a real ERP system you need:
 
-| Missing Feature | Why It Matters |
-|---|---|
-| **Supplier model** | Every product comes from a supplier. You need to track who sells you what, at what price and lead time |
-| **Auto stock update** | When you record a stock movement, the stock balance should update automatically — not manually |
-| **Low stock flag** | Warehouse managers need to know when to reorder |
-| **Inventory turnover** | Finance teams measure how fast inventory is sold |
+| Missing Feature        | Why It Matters                                                                                         |
+| ---------------------- | ------------------------------------------------------------------------------------------------------ |
+| **Supplier model**     | Every product comes from a supplier. You need to track who sells you what, at what price and lead time |
+| **Auto stock update**  | When you record a stock movement, the stock balance should update automatically — not manually         |
+| **Low stock flag**     | Warehouse managers need to know when to reorder                                                        |
+| **Inventory turnover** | Finance teams measure how fast inventory is sold                                                       |
 
 So we rebuilt the inventory module from scratch following **SOLID principles**.
 
@@ -71,6 +72,7 @@ SOLID is a set of 5 design principles for writing clean, maintainable code. Let 
 > **"Each class should have only one reason to change."**
 
 **Bad approach (before):**
+
 ```python
 # StockMovement was doing everything
 class StockMovement(BaseModel):
@@ -83,6 +85,7 @@ class StockMovement(BaseModel):
 ```
 
 **Our approach (after):**
+
 ```python
 # Stock owns all stock math (its one job)
 class Stock(BaseModel):
@@ -110,6 +113,7 @@ Each class has exactly one job. If the stock calculation formula changes, you on
 We want to add new movement types (like `RETURN` or `PURCHASE`) without changing any existing working code.
 
 **How we did it — TextChoices:**
+
 ```python
 class StockMovement(BaseModel):
     class MovementType(models.TextChoices):
@@ -132,6 +136,7 @@ To add a new movement type, you **only add one line**. You do NOT modify `Stock.
 > **"Subclasses should be safely usable anywhere their parent class is used."**
 
 All our models inherit from `BaseModel`:
+
 ```python
 class BaseModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -243,6 +248,7 @@ class SupplierProduct(BaseModel):
 If you just do `suppliers = ManyToManyField(Supplier)`, you lose all the extra data. The through model lets you store price, lead time, and preferred status per supplier-product combination.
 
 **In the Product model:**
+
 ```python
 class Product(BaseModel):
     suppliers = models.ManyToManyField(
@@ -437,6 +443,7 @@ def inventory_turnover_rate(self, days: int = 365) -> Decimal:
 ```
 
 **Example:**
+
 - Product: Laptop
 - Cost price: $500
 - 30 laptops sold in last 365 days → COGS = 30 × $500 = $15,000
@@ -468,6 +475,7 @@ def days_of_stock_remaining(self) -> int:
 ```
 
 **Example:**
+
 - 60 units sold in the last 30 days → daily usage = 2 units/day
 - Current stock = 50 units
 - **Days remaining = 50 / 2 = 25 days**
@@ -482,12 +490,12 @@ For the `Product` model, we created **two serializers** with different purposes.
 
 ### 7.1 — Why Two Serializers?
 
-| Concern | `ProductSerializer` | `ProductCreateUpdateSerializer` |
-|---|---|---|
-| **Used for** | GET (list, detail) | POST, PUT, PATCH |
-| **Computed fields** | ✅ Yes (turnover, low_stock, etc.) | ❌ No (not needed on write) |
-| **Validation** | Basic | Strict (SKU uniqueness, price checks) |
-| **Fields shown** | All including analytics | Only writable fields |
+| Concern             | `ProductSerializer`                | `ProductCreateUpdateSerializer`       |
+| ------------------- | ---------------------------------- | ------------------------------------- |
+| **Used for**        | GET (list, detail)                 | POST, PUT, PATCH                      |
+| **Computed fields** | ✅ Yes (turnover, low_stock, etc.) | ❌ No (not needed on write)           |
+| **Validation**      | Basic                              | Strict (SKU uniqueness, price checks) |
+| **Fields shown**    | All including analytics            | Only writable fields                  |
 
 This follows the **Interface Segregation Principle** — the read interface is rich, the write interface is strict and lean.
 
@@ -633,6 +641,7 @@ class ProductAdmin(admin.ModelAdmin):
 ```
 
 **`inlines`** are sub-sections inside the parent form. When you open a Product in admin, you see:
+
 - The product fields
 - A table of suppliers with their pricing
 - A table of current stock in each warehouse
@@ -658,6 +667,7 @@ Bad commit message: `"update files"`
 Good commit message: `"feat(inventory): add Supplier model with M2M through table"`
 
 Good commit messages are useful because:
+
 - Future you (6 months later) can understand what changed and why
 - Your team can review history without reading code
 - Tools like `git log` become useful instead of useless
@@ -673,13 +683,14 @@ We followed the **Conventional Commits** standard:
 ```
 
 Types used:
-| Type | When |
-|---|---|
-| `feat` | Adding a new feature |
-| `fix` | Fixing a bug |
-| `docs` | Documentation only |
+
+| Type       | When                                        |
+| ---------- | ------------------------------------------- |
+| `feat`     | Adding a new feature                        |
+| `fix`      | Fixing a bug                                |
+| `docs`     | Documentation only                          |
 | `refactor` | Code change that isn't a bug fix or feature |
-| `test` | Adding tests |
+| `test`     | Adding tests                                |
 
 ### The git workflow we ran
 
@@ -714,6 +725,7 @@ git push -u origin main
 ```
 
 **What the output meant:**
+
 ```
 73 files changed, 6343 insertions(+)
 → We pushed 73 files with 6343 lines of code in the first commit
@@ -728,6 +740,7 @@ git push -u origin main
 Migrations are Python files that describe the current state of your database schema. Django reads them and generates SQL to CREATE/ALTER/DROP tables.
 
 Every time you change a model, you need to:
+
 1. `makemigrations` — generate the migration file
 2. `migrate` — apply it to the database
 
@@ -753,6 +766,7 @@ DJANGO_SETTINGS_MODULE=config.settings.local_sqlite python manage.py makemigrati
 ```
 
 Output:
+
 ```
 Migrations for 'accounts':
   apps/accounts/migrations/0001_initial.py
@@ -814,14 +828,14 @@ You almost never edit migration files by hand. You modify models, then run `make
 
 ### Why PostgreSQL instead of SQLite?
 
-| SQLite | PostgreSQL |
-|---|---|
-| File-based database | Proper server |
-| Great for development | Required for production |
-| No setup needed | Needs installation |
-| No network access | Multiple apps can connect |
-| Limited data types | Full data type support |
-| No concurrent writes | Handles thousands of queries/sec |
+| SQLite                | PostgreSQL                       |
+| --------------------- | -------------------------------- |
+| File-based database   | Proper server                    |
+| Great for development | Required for production          |
+| No setup needed       | Needs installation               |
+| No network access     | Multiple apps can connect        |
+| Limited data types    | Full data type support           |
+| No concurrent writes  | Handles thousands of queries/sec |
 
 Our project is designed for PostgreSQL (UUID primary keys, company-scoped unique constraints, etc.). SQLite was fine for generating migrations but we need PostgreSQL for real use.
 
@@ -834,12 +848,14 @@ brew install postgresql@16
 ```
 
 After installation, Homebrew shows you:
+
 ```
 To start postgresql@16 now and restart at login:
   brew services start postgresql@16
 ```
 
 Add PostgreSQL to your PATH (so you can use `psql` command):
+
 ```bash
 echo 'export PATH="/opt/homebrew/opt/postgresql@16/bin:$PATH"' >> ~/.zshrc
 ```
@@ -932,6 +948,7 @@ DJANGO_SETTINGS_MODULE=config.settings.development python manage.py migrate
 ```
 
 Output:
+
 ```
 Operations to perform:
   Apply all migrations: accounts, admin, audit, auth, contenttypes, finance, hr, inventory, sales, sessions, token_blacklist
@@ -951,6 +968,7 @@ Running migrations:
 ```
 
 **36 migrations** applied successfully. In PostgreSQL you can verify:
+
 ```bash
 psql core_db -c "\dt"   # List all tables
 ```
@@ -968,6 +986,7 @@ python manage.py createsuperuser
 ```
 
 Or programmatically (what we did, to avoid interactive prompt):
+
 ```bash
 python manage.py shell -c "
 from django.contrib.auth import get_user_model
@@ -992,6 +1011,7 @@ DJANGO_SETTINGS_MODULE=config.settings.development python manage.py runserver 80
 ```
 
 Output:
+
 ```
 Django version 5.0.3, using settings 'config.settings.development'
 Starting development server at http://127.0.0.1:8000/
@@ -1001,6 +1021,7 @@ Quit the server with CONTROL-C.
 **Why set `DJANGO_SETTINGS_MODULE`?**
 
 Our project has multiple settings files:
+
 ```
 config/settings/
 ├── base.py         ← Shared settings
@@ -1010,6 +1031,7 @@ config/settings/
 ```
 
 By setting the env variable, Django knows which file to use. You could also put it in your shell config:
+
 ```bash
 echo 'export DJANGO_SETTINGS_MODULE=config.settings.development' >> ~/.zshrc
 ```
@@ -1044,6 +1066,7 @@ Fetch error: Internal Server Error /api/v1/schema/
 ### Step 1 — Read the terminal
 
 The server terminal showed:
+
 ```
 AssertionError: The field 'balance' was declared on serializer ExpenseSerializer,
 but has not been included in the 'fields' option.
@@ -1119,12 +1142,14 @@ Every request needs a JWT token. Without it you get HTTP 401 (Unauthorized).
 1. Find **`POST /api/v1/auth/login/`**
 2. Click **"Try it out"**
 3. Enter:
+
 ```json
 {
   "email": "admin@erp.com",
   "password": "Admin1234!"
 }
 ```
+
 4. Click **Execute**
 5. Copy the `access` token from the response
 6. Click **"Authorize 🔒"** at the top of the page
@@ -1140,6 +1165,7 @@ Example: Create a supplier
 1. Find **`POST /api/v1/inventory/suppliers/`**
 2. Click **"Try it out"**
 3. Enter the request body:
+
 ```json
 {
   "name": "Tech Distributors Ltd",
@@ -1151,21 +1177,22 @@ Example: Create a supplier
   "is_active": true
 }
 ```
+
 4. Click **Execute**
 5. You get back HTTP `201 Created` with the new supplier (including its `id`)
 
 ### Step 3 — HTTP Status Codes
 
-| Code | Meaning | When |
-|---|---|---|
-| `200 OK` | Success | GET request succeeded |
-| `201 Created` | Created | POST succeeded, new record created |
-| `204 No Content` | Deleted | DELETE succeeded |
-| `400 Bad Request` | Validation error | You sent invalid data |
-| `401 Unauthorized` | No token | You forgot to authenticate |
-| `403 Forbidden` | No permission | You don't have access |
-| `404 Not Found` | Doesn't exist | Wrong ID |
-| `500 Server Error` | Code bug | Check the terminal |
+| Code               | Meaning          | When                               |
+| ------------------ | ---------------- | ---------------------------------- |
+| `200 OK`           | Success          | GET request succeeded              |
+| `201 Created`      | Created          | POST succeeded, new record created |
+| `204 No Content`   | Deleted          | DELETE succeeded                   |
+| `400 Bad Request`  | Validation error | You sent invalid data              |
+| `401 Unauthorized` | No token         | You forgot to authenticate         |
+| `403 Forbidden`    | No permission    | You don't have access              |
+| `404 Not Found`    | Doesn't exist    | Wrong ID                           |
+| `500 Server Error` | Code bug         | Check the terminal                 |
 
 ### Understanding the query parameters
 
@@ -1189,15 +1216,15 @@ Here's a complete picture of what was done in this tutorial session:
 
 ### Code written
 
-| File | Lines | What it does |
-|---|---|---|
-| `apps/inventory/models.py` | ~400 | Full domain model with SOLID principles |
-| `apps/inventory/serializers.py` | ~300 | Read/write serializer separation, validation |
-| `apps/inventory/views.py` | ~260 | 8 ViewSets, 10+ custom action endpoints |
-| `apps/inventory/admin.py` | ~100 | Rich admin with inline tabs |
-| `apps/inventory/urls.py` | ~30 | 8 routes registered |
-| `config/settings/local_sqlite.py` | ~60 | SQLite settings for migrations without PostgreSQL |
-| `apps/*/migrations/0001_initial.py` | ~722 | Auto-generated schema for all 6 apps |
+| File                                | Lines | What it does                                      |
+| ----------------------------------- | ----- | ------------------------------------------------- |
+| `apps/inventory/models.py`          | ~400  | Full domain model with SOLID principles           |
+| `apps/inventory/serializers.py`     | ~300  | Read/write serializer separation, validation      |
+| `apps/inventory/views.py`           | ~260  | 8 ViewSets, 10+ custom action endpoints           |
+| `apps/inventory/admin.py`           | ~100  | Rich admin with inline tabs                       |
+| `apps/inventory/urls.py`            | ~30   | 8 routes registered                               |
+| `config/settings/local_sqlite.py`   | ~60   | SQLite settings for migrations without PostgreSQL |
+| `apps/*/migrations/0001_initial.py` | ~722  | Auto-generated schema for all 6 apps              |
 
 ### Infrastructure set up
 
@@ -1211,11 +1238,11 @@ Here's a complete picture of what was done in this tutorial session:
 
 ### GitHub commits pushed
 
-| Commit | What |
-|---|---|
-| `a6e00f4` | Initial commit — 73 files, 6343 lines |
-| `0100db5` | Complete inventory module |
-| `8a06866` | All migrations + local_sqlite settings |
+| Commit    | What                                    |
+| --------- | --------------------------------------- |
+| `a6e00f4` | Initial commit — 73 files, 6343 lines   |
+| `0100db5` | Complete inventory module               |
+| `8a06866` | All migrations + local_sqlite settings  |
 | `36b2710` | Fix ExpenseSerializer balance field bug |
 
 ### Key concepts learned

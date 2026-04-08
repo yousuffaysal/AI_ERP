@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Instrument_Serif, Manrope } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+const manrope = Manrope({ subsets: ["latin"], variable: "--font-manrope" });
+const instrument = Instrument_Serif({ weight: "400", subsets: ["latin"], variable: "--font-instrument" });
 
 export const metadata: Metadata = {
-    title: "Core ERP | AI Powered Operations",
+    title: "AI ERP | Enterprise Intelligence",
     description: "Enterprise Resource Planning system enhanced with Machine Learning.",
 };
 
@@ -15,8 +16,8 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en" className="bg-slate-50">
-            <body className={`${inter.className} text-slate-900 antialiased`}>
+        <html lang="en" className="bg-[#f0ece1] dark:bg-[#070707]" suppressHydrationWarning>
+            <body className={`${manrope.variable} ${instrument.variable} font-sans text-slate-900 dark:text-[#EAEAEA] antialiased min-h-screen selection:bg-[#E2FF00] selection:text-black`} suppressHydrationWarning>
                 {children}
             </body>
         </html>

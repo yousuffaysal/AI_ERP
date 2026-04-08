@@ -40,6 +40,13 @@ class CompanyQuerysetMixin:
         this prevents silent data leakage via unfiltered querysets.
         """
         company = getattr(self.request, 'company', None)
+        
+        # DRF JWT Authentication populates request.user after the middleware phase.
+        # So we must lazily evaluate request.user.company here.
+        if not company and getattr(self.request, 'user', None) and self.request.user.is_authenticated:
+            company = getattr(self.request.user, 'company', None)
+            self.request.company = company
+
         if company is None:
             logger.warning(
                 'CompanyQuerysetMixin: No company on request for %s %s by user=%s',

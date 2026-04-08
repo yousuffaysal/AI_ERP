@@ -4,7 +4,7 @@ djangorestframework==3.15.1
 django-cors-headers==4.3.1
 
 # Database
-psycopg2-binary==2.9.9
+psycopg2-binary>=2.9.10
 
 # Authentication
 djangorestframework-simplejwt==5.3.1
@@ -28,7 +28,7 @@ redis==5.0.3
 django-celery-beat==2.6.0
 
 # Utilities
-Pillow==10.2.0
+Pillow>=10.4.0
 python-slugify==8.0.4
 
 # Production Server

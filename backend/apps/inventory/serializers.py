@@ -189,12 +189,13 @@ class ProductCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = [
-            'name', 'sku', 'barcode', 'description',
+            'id', 'name', 'sku', 'barcode', 'description',
             'category', 'unit',
             'cost_price', 'selling_price',
             'reorder_level', 'reorder_quantity',
             'status', 'image', 'weight_kg',
         ]
+        read_only_fields = ['id']
 
     def validate_selling_price(self, value):
         cost = self.initial_data.get('cost_price', 0)

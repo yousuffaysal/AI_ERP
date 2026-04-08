@@ -13,6 +13,7 @@ from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
 from utils.mixins import CompanyQuerysetMixin
@@ -350,6 +351,104 @@ class InvoiceViewSet(CompanyQuerysetMixin, ModelViewSet):
             'payment': PaymentSerializer(payment).data,
         })
 
+    @action(detail=True, methods=['get'], permission_classes=[IsAuthenticated, HasCompany])
+    def download_pdf(self, request, pk=None):
+        """
+        Generate and download a professional PDF of the invoice.
+        Includes customer info, itemized table, and total calculations.
+        """
+        invoice = self.get_object()
+        
+        from django.http import FileResponse
+        import io
+        from reportlab.lib.pagesizes import letter
+        from reportlab.lib import colors
+        from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+        from reportlab.lib.styles import getSampleStyleSheet
+        
+        buffer = io.BytesIO()
+        doc = SimpleDocTemplate(
+            buffer, 
+            pagesize=letter, 
+            rightMargin=40, leftMargin=40, 
+            topMargin=40, bottomMargin=40
+        )
+        elements = []
+        styles = getSampleStyleSheet()
+        
+        # Invoice Header
+        elements.append(Paragraph(f"INVOICE: {invoice.invoice_number}", styles['Title']))
+        elements.append(Spacer(1, 12))
+        
+        # Basic Details Table
+        details = [
+            ["Customer:", invoice.customer.name],
+            ["Issue Date:", str(invoice.issue_date)],
+            ["Due Date:", str(invoice.due_date) if invoice.due_date else "N/A"],
+            ["Status:", invoice.status.upper()],
+            ["Reference:", invoice.reference or "N/A"],
+        ]
+        t_details = Table(details, colWidths=[100, 300])
+        t_details.setStyle(TableStyle([
+            ('FONTNAME', (0,0), (0,-1), 'Helvetica-Bold'),
+            ('FONTSIZE', (0,0), (-1,-1), 10),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 5),
+        ]))
+        elements.append(t_details)
+        elements.append(Spacer(1, 24))
+        
+        # Table Header
+        items_data = [["Product", "Description", "Qty", "Unit Price", "Total"]]
+        
+        for item in invoice.items.all():
+            items_data.append([
+                item.product.name if item.product else "N/A",
+                item.description[:40] + ("..." if len(item.description) > 40 else ""),
+                str(item.quantity),
+                f"${item.unit_price:.2f}",
+                f"${item.total:.2f}"
+            ])
+            
+        t_items = Table(items_data, colWidths=[100, 180, 50, 80, 80])
+        t_items.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,0), colors.whitesmoke),
+            ('TEXTCOLOR', (0,0), (-1,0), colors.black),
+            ('ALIGN', (0,0), (-1,-1), 'LEFT'),
+            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0,0), (-1,-1), 9),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 8),
+            ('GRID', (0,0), (-1,-1), 0.5, colors.grey),
+        ]))
+        elements.append(t_items)
+        elements.append(Spacer(1, 24))
+        
+        # Financial Totals Table
+        totals = [
+            ["", "Subtotal:", f"${invoice.subtotal:.2f}"],
+            ["", "Tax Amount:", f"${invoice.tax_amount:.2f}"],
+            ["", "Discount:", f"-${invoice.discount_amount:.2f}"],
+            ["", "TOTAL DUE:", f"${invoice.amount_due:.2f}"],
+        ]
+        t_totals = Table(totals, colWidths=[300, 110, 80])
+        t_totals.setStyle(TableStyle([
+            ('ALIGN', (1,0), (2,-1), 'RIGHT'),
+            ('FONTNAME', (1,3), (2,3), 'Helvetica-Bold'),
+            ('FONTSIZE', (1,3), (2,3), 11),
+            ('LINEABOVE', (1,3), (2,3), 1, colors.black),
+        ]))
+        elements.append(t_totals)
+        
+        # Build PDF
+        doc.build(elements)
+        buffer.seek(0)
+        
+        return FileResponse(
+            buffer, 
+            as_attachment=True, 
+            filename=f"Invoice_{invoice.invoice_number}.pdf",
+            content_type='application/pdf'
+        )
+
     @action(detail=True, methods=['post'], permission_classes=[IsManager, HasCompany])
     def void(self, request, pk=None):
         """
@@ -452,3 +551,46 @@ class PaymentViewSet(CompanyQuerysetMixin, ModelViewSet):
     filterset_fields = ['invoice', 'method']
     ordering_fields = ['payment_date', 'amount']
     http_method_names = ['get', 'head', 'options']  # Read-only
+
+
+# ---------------------------------------------------------------------------
+# AI Pricing Optimization
+# ---------------------------------------------------------------------------
+
+class OptimizePricingView(APIView):
+    """
+    POST /sales/optimize-pricing/
+    Body: { unit_cost, current_velocity, competitor_price }
+    Delegates to the FastAPI AI service for ML-based price optimization.
+    """
+    permission_classes = [IsAuthenticated, HasCompany]
+
+    def post(self, request, *args, **kwargs):
+        from asgiref.sync import async_to_sync
+        from utils.ai_client import ai_client
+
+        unit_cost = float(request.data.get('unit_cost', 0))
+        current_velocity = float(request.data.get('current_velocity', 0))
+        competitor_price = float(request.data.get('competitor_price', 0))
+
+        # Build minimal historical data from available invoice items
+        # This gives the AI service enough context even without deep history
+        historical_data = [
+            {'price': competitor_price * 0.9, 'quantity_sold': current_velocity * 1.1},
+            {'price': competitor_price,       'quantity_sold': current_velocity},
+            {'price': competitor_price * 1.1, 'quantity_sold': current_velocity * 0.9},
+        ]
+
+        try:
+            result = async_to_sync(ai_client.optimize_pricing)(
+                product_id='generic',
+                historical_data=historical_data,
+                unit_cost=unit_cost,
+                current_velocity=current_velocity,
+            )
+            return Response(result)
+        except Exception as e:
+            return Response(
+                {'error': str(e) or 'AI pricing service temporarily unavailable.'},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )

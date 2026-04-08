@@ -215,6 +215,58 @@ class ProductViewSet(CompanyQuerysetMixin, ModelViewSet):
         serializer = StockMovementSerializer(qs, many=True)
         return Response(serializer.data)
 
+    @action(detail=True, methods=['post'])
+    def forecast(self, request, pk=None):
+        """
+        AI-powered demand forecast using ARIMA via the FastAPI AI service.
+        Builds historical sales data from the last 90 days of SALE/OUT movements.
+        POST body: { "days": 30 }  (defaults to 30)
+        """
+        from asgiref.sync import async_to_sync
+        from django.utils import timezone
+        import datetime
+        from utils.ai_client import ai_client
+
+        product = self.get_object()
+        days = request.data.get('days', 30)
+
+        # Build historical data from SALE and OUT movements in the last 90 days
+        cutoff = timezone.now() - datetime.timedelta(days=90)
+        movements = (
+            StockMovement.objects.filter(
+                product=product,
+                company=request.company,
+                movement_type__in=[
+                    StockMovement.MovementType.SALE,
+                    StockMovement.MovementType.OUT,
+                ],
+                created_at__gte=cutoff,
+            )
+            .order_by('created_at')
+            .values('created_at', 'quantity')
+        )
+
+        historical_sales = [
+            {
+                'date': m['created_at'].strftime('%Y-%m-%d'),
+                'quantity': float(m['quantity']),
+            }
+            for m in movements
+        ]
+
+        try:
+            result = async_to_sync(ai_client.forecast_demand)(
+                product_id=str(product.id),
+                historical_sales=historical_sales,
+                days=days,
+            )
+            return Response(result)
+        except Exception as e:
+            return Response(
+                {'error': str(e) or 'AI service unavailable. Ensure the AI engine is running.'},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+
 
 # ---------------------------------------------------------------------------
 # Warehouse

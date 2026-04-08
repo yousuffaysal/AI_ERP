@@ -48,7 +48,14 @@ class HasCompany(BasePermission):
     message = 'No company context found. Ensure your account is linked to a company or provide the X-Company-ID header.'
 
     def has_permission(self, request, view):
-        return getattr(request, 'company', None) is not None
+        company = getattr(request, 'company', None)
+        
+        # Lazy check since DRF executes JWT Auth after Django's middleware
+        if not company and getattr(request, 'user', None) and request.user.is_authenticated:
+            company = getattr(request.user, 'company', None)
+            request.company = company
+            
+        return company is not None
 
 
 class IsSameCompany(BasePermission):
@@ -62,6 +69,12 @@ class IsSameCompany(BasePermission):
 
     def has_object_permission(self, request, view, obj):
         request_company = getattr(request, 'company', None)
+        
+        # Lazy check since DRF executes JWT Auth after Django's middleware
+        if not request_company and getattr(request, 'user', None) and request.user.is_authenticated:
+            request_company = getattr(request.user, 'company', None)
+            request.company = request_company
+            
         obj_company = getattr(obj, 'company', None)
 
         if request_company is None or obj_company is None:

@@ -35,3 +35,18 @@ htmlcov/
 
 # Antigravity AI assistant brain directory (local only)
 .gemini/
+
+# Node / Next.js
+**/node_modules/
+node_modules/
+**/.next/
+.next/
+frontend/.next/
+frontend/out/
+build/
+dist/
+
+# Other
+.DS_Store
+*.seed
+*.log

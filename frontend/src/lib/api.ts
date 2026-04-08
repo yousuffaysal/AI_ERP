@@ -1,5 +1,9 @@
-import axios from 'axios';
-import { useAuthStore } from '../store/useAuthStore';
+import axios, { InternalAxiosRequestConfig } from 'axios';
+import { useAuthStore } from '@/store/useAuthStore';
+
+interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
+  _retry?: boolean;
+}
 
 // Access the host environment's DRF URL or default to localhost:8000
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
@@ -31,7 +35,7 @@ api.interceptors.response.use(
         return response;
     },
     async (error) => {
-        const originalRequest = error.config;
+        const originalRequest = error.config as CustomAxiosRequestConfig;
 
         // If we catch a 401 and haven't already retried this exact request
         if (error.response?.status === 401 && !originalRequest._retry) {
@@ -41,7 +45,7 @@ api.interceptors.response.use(
             if (refreshToken) {
                 try {
                     // Attempt to refresh the access token via Django's auth module
-                    const response = await axios.post(`${API_URL}/accounts/token/refresh/`, {
+                    const response = await axios.post(`${API_URL}/auth/token/refresh/`, {
                         refresh: refreshToken,
                     });
 
