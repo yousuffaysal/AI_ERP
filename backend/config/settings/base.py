@@ -270,7 +270,10 @@ LOGGING = {
         'file': {
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler', # Save to a file
-            'filename': BASE_DIR / 'logs' / 'application.log',
+            'filename': (lambda: (
+                (BASE_DIR / 'logs').mkdir(parents=True, exist_ok=True),
+                BASE_DIR / 'logs' / 'application.log'
+            )[1])(),
             'maxBytes': 1024 * 1024 * 10,  # Limit file to 10MB before starting a new one
             'backupCount': 5, # Keep up to 5 old log files
             'formatter': 'verbose',
