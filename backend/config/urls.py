@@ -3,6 +3,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
+from django.views.generic import RedirectView
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularRedocView,
@@ -13,6 +14,9 @@ from drf_spectacular.views import (
 API_V1 = 'api/v1/'
 
 urlpatterns = [
+    # Root Redirect to API Docs
+    path('', RedirectView.as_view(url=f'/{API_V1}docs/', permanent=False)),
+
     # Django Admin
     path('admin/', admin.site.urls),
 
