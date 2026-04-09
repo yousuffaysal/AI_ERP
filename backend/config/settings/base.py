@@ -200,7 +200,7 @@ SIMPLE_JWT = {
 # ---------------------------------------------------------------------------
 # CORS: Allowing frontend (like React or Vue) to talk to this API
 # ---------------------------------------------------------------------------
-CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS', default=[])
+CORS_ALLOWED_ORIGINS = [origin.strip().rstrip('/') for origin in env.list('CORS_ALLOWED_ORIGINS', default=[])]
 CORS_ALLOW_CREDENTIALS = True
 
 # ---------------------------------------------------------------------------
