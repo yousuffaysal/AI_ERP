@@ -56,6 +56,14 @@ interface DashboardStats {
     }>;
 }
 
+interface QuickAction {
+    name: string;
+    icon: any;
+    color: string;
+    link: string;
+    roles?: string[];
+}
+
 export default function DashboardPage() {
     const { user } = useAuthStore();
     const [healthData, setHealthData] = useState<HealthData | null>(null);
@@ -254,14 +262,15 @@ export default function DashboardPage() {
                     <motion.div variants={itemVariants}>
                         <h3 className="text-sm font-bold uppercase tracking-widest text-slate-500 mb-4 px-2">Quick Commands</h3>
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                            {[
-                                { name: "Create Invoice", icon: FileText, color: "bg-blue-500", link: "/sales", roles: ['admin', 'manager', 'sales', 'finance'] },
+                            {(
+                                [
+                                    { name: "Create Invoice", icon: FileText, color: "bg-blue-500", link: "/sales", roles: ['admin', 'manager', 'sales', 'finance'] },
                                 { name: "View Orders", icon: Plus, color: "bg-emerald-500", link: "/sales", roles: ['admin', 'manager', 'sales', 'staff', 'auditor'] },
                                 { name: "New Product", icon: Package, color: "bg-amber-500", link: "/inventory", roles: ['admin', 'manager', 'sales'] },
                                 { name: "HR & People", icon: Briefcase, color: "bg-indigo-500", link: "/hr", roles: ['admin', 'manager', 'hr_manager'] },
                                 { name: "Audit Trail", icon: Activity, color: "bg-slate-500", link: "/audit", roles: ['admin', 'auditor'] },
                                 { name: "Budgets", icon: DollarSign, color: "bg-purple-500", link: "/finance", roles: ['admin', 'finance'] },
-                            ]
+                            ] as QuickAction[])
                             .filter(action => !action.roles || (user?.role && action.roles.includes(user.role)))
                             .slice(0, 4) // Keep it to 4 items for layout
                             .map((action, i) => (

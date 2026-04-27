@@ -19,7 +19,20 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 
-const NAV_GROUPS = [
+interface NavItem {
+    name: string;
+    href: string;
+    icon: any;
+    roles?: string[];
+}
+
+interface NavGroup {
+    label: string;
+    items: NavItem[];
+    roles?: string[];
+}
+
+const NAV_GROUPS: NavGroup[] = [
     {
         label: "Overview",
         items: [
