@@ -1,6 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from utils.permissions import require_permission, HasCompany
 from django.http import HttpResponse
 from .services.query import QueryBuilder
