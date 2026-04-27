@@ -13,7 +13,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
 from utils.mixins import CompanyQuerysetMixin
-from utils.permissions import HasCompany, IsAdmin, IsManager
+from utils.permissions import HasCompany, require_permission
 
 from .models import Category, Product, Stock, StockMovement, Supplier, SupplierProduct, Unit, Warehouse
 from .serializers import (
@@ -72,7 +72,7 @@ class UnitViewSet(CompanyQuerysetMixin, ModelViewSet):
     """Units of measurement — company-scoped, Manager+ only."""
     queryset = Unit.objects.all()
     serializer_class = UnitSerializer
-    permission_classes = [IsManager, HasCompany]
+    permission_classes = [require_permission('can_manage_products'), HasCompany]
     search_fields = ['name', 'abbreviation']
     ordering_fields = ['name']
 
@@ -88,7 +88,7 @@ class SupplierViewSet(CompanyQuerysetMixin, ModelViewSet):
     """
     queryset = Supplier.objects.prefetch_related('supplier_products__product').all()
     serializer_class = SupplierSerializer
-    permission_classes = [IsManager, HasCompany]
+    permission_classes = [require_permission('can_manage_suppliers'), HasCompany]
     search_fields = ['name', 'code', 'contact_name', 'email']
     filterset_fields = ['is_active']
     ordering_fields = ['name', 'created_at']
@@ -106,7 +106,7 @@ class SupplierProductViewSet(CompanyQuerysetMixin, ModelViewSet):
     """Supplier ↔ Product pricing and terms (through-table)."""
     queryset = SupplierProduct.objects.select_related('supplier', 'product').all()
     serializer_class = SupplierProductSerializer
-    permission_classes = [IsManager, HasCompany]
+    permission_classes = [require_permission('can_manage_suppliers'), HasCompany]
     filterset_fields = ['supplier', 'product', 'is_preferred']
     ordering_fields = ['unit_cost', 'lead_time_days']
 
@@ -279,7 +279,7 @@ class WarehouseViewSet(CompanyQuerysetMixin, ModelViewSet):
     """
     queryset = Warehouse.objects.prefetch_related('stock_entries').all()
     serializer_class = WarehouseSerializer
-    permission_classes = [IsManager, HasCompany]
+    permission_classes = [require_permission('can_manage_warehouses'), HasCompany]
     search_fields = ['name', 'code', 'location']
     filterset_fields = ['is_active']
     ordering_fields = ['name']
@@ -349,7 +349,7 @@ class StockMovementViewSet(CompanyQuerysetMixin, ModelViewSet):
         'product', 'warehouse', 'created_by'
     ).all()
     serializer_class = StockMovementSerializer
-    permission_classes = [IsManager, HasCompany]
+    permission_classes = [require_permission('can_manage_stock'), HasCompany]
     filterset_fields = ['product', 'warehouse', 'movement_type']
     search_fields = ['reference', 'notes', 'product__name', 'product__sku']
     ordering_fields = ['created_at']

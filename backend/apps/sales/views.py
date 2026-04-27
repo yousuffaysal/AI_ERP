@@ -17,7 +17,7 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
 from utils.mixins import CompanyQuerysetMixin
-from utils.permissions import HasCompany, IsManager
+from utils.permissions import HasCompany, require_permission
 
 from .models import (
     CompanyTaxSettings,
@@ -53,7 +53,7 @@ class CompanyTaxSettingsViewSet(CompanyQuerysetMixin, ModelViewSet):
     """
     queryset = CompanyTaxSettings.objects.all()
     serializer_class = CompanyTaxSettingsSerializer
-    permission_classes = [IsManager, HasCompany]
+    permission_classes = [require_permission('can_manage_company'), HasCompany]
     http_method_names = ['get', 'post', 'put', 'patch', 'head', 'options']
 
 
@@ -132,7 +132,7 @@ class SalesOrderViewSet(CompanyQuerysetMixin, ModelViewSet):
         order.save(update_fields=['status', 'updated_by'])
         return Response(SalesOrderSerializer(order, context={'request': request}).data)
 
-    @action(detail=True, methods=['post'], permission_classes=[IsManager, HasCompany])
+    @action(detail=True, methods=['post'], permission_classes=[require_permission('can_confirm_orders'), HasCompany])
     def confirm(self, request, pk=None):
         return self._transition(
             request, pk,
@@ -140,7 +140,7 @@ class SalesOrderViewSet(CompanyQuerysetMixin, ModelViewSet):
             'Only DRAFT orders can be confirmed.',
         )
 
-    @action(detail=True, methods=['post'], permission_classes=[IsManager, HasCompany])
+    @action(detail=True, methods=['post'], permission_classes=[require_permission('can_ship_orders'), HasCompany])
     def process(self, request, pk=None):
         return self._transition(
             request, pk,
@@ -148,7 +148,7 @@ class SalesOrderViewSet(CompanyQuerysetMixin, ModelViewSet):
             'Only CONFIRMED orders can be moved to processing.',
         )
 
-    @action(detail=True, methods=['post'], permission_classes=[IsManager, HasCompany])
+    @action(detail=True, methods=['post'], permission_classes=[require_permission('can_ship_orders'), HasCompany])
     def ship(self, request, pk=None):
         return self._transition(
             request, pk,
@@ -156,7 +156,7 @@ class SalesOrderViewSet(CompanyQuerysetMixin, ModelViewSet):
             'Only PROCESSING orders can be shipped.',
         )
 
-    @action(detail=True, methods=['post'], permission_classes=[IsManager, HasCompany])
+    @action(detail=True, methods=['post'], permission_classes=[require_permission('can_ship_orders'), HasCompany])
     def deliver(self, request, pk=None):
         return self._transition(
             request, pk,
@@ -164,7 +164,7 @@ class SalesOrderViewSet(CompanyQuerysetMixin, ModelViewSet):
             'Only SHIPPED orders can be marked as delivered.',
         )
 
-    @action(detail=True, methods=['post'], permission_classes=[IsManager, HasCompany])
+    @action(detail=True, methods=['post'], permission_classes=[require_permission('can_confirm_orders'), HasCompany])
     def cancel(self, request, pk=None):
         order = self.get_object()
         terminal = {SalesOrder.Status.DELIVERED, SalesOrder.Status.CANCELLED}
@@ -178,7 +178,7 @@ class SalesOrderViewSet(CompanyQuerysetMixin, ModelViewSet):
         order.save(update_fields=['status', 'updated_by'])
         return Response(SalesOrderSerializer(order, context={'request': request}).data)
 
-    @action(detail=True, methods=['post'], permission_classes=[IsManager, HasCompany],
+    @action(detail=True, methods=['post'], permission_classes=[require_permission('can_confirm_orders'), HasCompany],
             url_path='create-invoice')
     def create_invoice(self, request, pk=None):
         """
@@ -292,7 +292,7 @@ class InvoiceViewSet(CompanyQuerysetMixin, ModelViewSet):
     # State transition actions
     # ------------------------------------------------------------------
 
-    @action(detail=True, methods=['post'], permission_classes=[IsManager, HasCompany])
+    @action(detail=True, methods=['post'], permission_classes=[require_permission('can_confirm_invoices'), HasCompany])
     def confirm(self, request, pk=None):
         """
         Confirm a DRAFT invoice:
@@ -314,7 +314,7 @@ class InvoiceViewSet(CompanyQuerysetMixin, ModelViewSet):
 
     @action(
         detail=True, methods=['post'],
-        permission_classes=[IsManager, HasCompany],
+        permission_classes=[require_permission('can_record_payments'), HasCompany],
         url_path='record-payment',
     )
     def record_payment(self, request, pk=None):
@@ -449,7 +449,7 @@ class InvoiceViewSet(CompanyQuerysetMixin, ModelViewSet):
             content_type='application/pdf'
         )
 
-    @action(detail=True, methods=['post'], permission_classes=[IsManager, HasCompany])
+    @action(detail=True, methods=['post'], permission_classes=[require_permission('can_void_invoices'), HasCompany])
     def void(self, request, pk=None):
         """
         Void this invoice.

@@ -3,7 +3,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import gettext_lazy as _
 
-from .models import Company, User
+from .models import Company, Permission, RolePermission, User, UserPermissionOverride
 
 
 @admin.register(Company)
@@ -27,9 +27,7 @@ class CompanyAdmin(admin.ModelAdmin):
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
-    list_display = [
-        'email', 'full_name', 'company', 'role', 'is_active', 'date_joined',
-    ]
+    list_display = ['email', 'full_name', 'company', 'role', 'is_active', 'date_joined']
     list_filter = ['role', 'is_active', 'is_staff', 'company']
     search_fields = ['email', 'first_name', 'last_name']
     ordering = ['-date_joined']
@@ -48,3 +46,27 @@ class UserAdmin(BaseUserAdmin):
             'fields': ('email', 'first_name', 'last_name', 'company', 'role', 'password1', 'password2'),
         }),
     )
+
+
+@admin.register(Permission)
+class PermissionAdmin(admin.ModelAdmin):
+    list_display = ['code', 'name', 'module']
+    list_filter = ['module']
+    search_fields = ['code', 'name']
+    ordering = ['module', 'code']
+
+
+@admin.register(RolePermission)
+class RolePermissionAdmin(admin.ModelAdmin):
+    list_display = ['role', 'permission']
+    list_filter = ['role', 'permission__module']
+    search_fields = ['permission__code']
+    ordering = ['role', 'permission__code']
+
+
+@admin.register(UserPermissionOverride)
+class UserPermissionOverrideAdmin(admin.ModelAdmin):
+    list_display = ['user', 'permission', 'granted', 'created_at']
+    list_filter = ['granted', 'permission__module']
+    search_fields = ['user__email', 'permission__code']
+    ordering = ['-created_at']

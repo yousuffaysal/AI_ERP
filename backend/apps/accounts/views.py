@@ -9,7 +9,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from utils.mixins import CompanyQuerysetMixin
-from utils.permissions import HasCompany, IsAdmin, IsManager
+from utils.permissions import HasCompany, require_permission
 
 from .models import Company
 from .serializers import (
@@ -94,7 +94,7 @@ class CompanyViewSet(ModelViewSet):
     """
     queryset = Company.objects.all()
     serializer_class = CompanySerializer
-    permission_classes = [IsAdmin]
+    permission_classes = [require_permission('can_manage_company')]
     http_method_names = ['get', 'post', 'patch', 'delete', 'head', 'options']
     search_fields = ['name', 'slug', 'email', 'domain']
     filterset_fields = ['is_active', 'subscription_plan']
@@ -138,24 +138,24 @@ class UserViewSet(CompanyQuerysetMixin, ModelViewSet):
 
     def get_permissions(self):
         if self.action in ('list', 'retrieve'):
-            return [IsManager(), HasCompany()]
-        return [IsAdmin(), HasCompany()]
+            return [require_permission('can_manage_users')(), HasCompany()]
+        return [require_permission('can_manage_users')(), HasCompany()]
 
-    @action(detail=True, methods=['post'], permission_classes=[IsAdmin, HasCompany])
+    @action(detail=True, methods=['post'], permission_classes=[require_permission('can_manage_users'), HasCompany])
     def activate(self, request, pk=None):
         user = self.get_object()
         user.is_active = True
         user.save(update_fields=['is_active'])
         return Response({'message': f'User {user.email} activated.'})
 
-    @action(detail=True, methods=['post'], permission_classes=[IsAdmin, HasCompany])
+    @action(detail=True, methods=['post'], permission_classes=[require_permission('can_manage_users'), HasCompany])
     def deactivate(self, request, pk=None):
         user = self.get_object()
         user.is_active = False
         user.save(update_fields=['is_active'])
         return Response({'message': f'User {user.email} deactivated.'})
 
-    @action(detail=True, methods=['patch'], permission_classes=[IsAdmin, HasCompany])
+    @action(detail=True, methods=['patch'], permission_classes=[require_permission('can_manage_users'), HasCompany])
     def change_role(self, request, pk=None):
         user = self.get_object()
         new_role = request.data.get('role')
