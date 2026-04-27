@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
+from utils.permissions import require_permission, HasCompany
 from django.http import HttpResponse
 from .services.query import QueryBuilder
 from .services.excel import SpreadsheetGenerator
@@ -17,7 +17,7 @@ class GenerateReportView(APIView):
     Accepts JSON containing 'model', 'filters', 'order_by', 'select_fields', and 'format' ("pdf" or "excel").
     Returns raw file bytes or an error JSON.
     """
-    permission_classes = [IsAuthenticated]
+    permission_classes = [require_permission('can_generate_reports'), HasCompany]
     
     def post(self, request, *args, **kwargs):
         payload = request.data
@@ -69,7 +69,7 @@ class ScheduleReportView(APIView):
     Accepts standard query JSON + 'email_to' and 'schedule_mode' ('daily', 'weekly').
     Schedules the celery beat task.
     """
-    permission_classes = [IsAuthenticated]
+    permission_classes = [require_permission('can_generate_reports'), HasCompany]
     
     def post(self, request, *args, **kwargs):
         payload = request.data
@@ -105,7 +105,7 @@ class DashboardStatsOverviewView(APIView):
     GET /api/v1/reports/dashboard-stats/
     Aggregates high-level metrics across Sales, Inventory, and Accounts for the UI.
     """
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, HasCompany]
 
     def get(self, request, *args, **kwargs):
         company = request.user.company
