@@ -15,8 +15,7 @@ import {
     Users,
     BarChart3,
     ChevronDown,
-    LogOut,
-    Star
+    LogOut
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -62,12 +61,6 @@ const NAV_GROUPS: NavGroup[] = [
         roles: ['admin', 'manager', 'hr_manager'],
         items: [
             { name: 'HR & People', href: '/hr', icon: Building2 },
-        ]
-    },
-    {
-        label: "Partners",
-        items: [
-            { name: 'Foxmen Studio', href: '/foxmen-studio', icon: Star },
         ]
     },
     {

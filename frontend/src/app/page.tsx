@@ -42,10 +42,7 @@ export default function LandingPage() {
         </div>
         <div className="flex gap-8 items-center">
           <Link href="/docs" className="hidden sm:block text-sm font-bold tracking-widest text-[#A0A0A0] hover:text-[#E2FF00] transition-colors uppercase">
-            Docs
-          </Link>
-          <Link href="/foxmen-studio" className="hidden sm:block text-sm font-bold tracking-widest text-[#A0A0A0] hover:text-[#E2FF00] transition-colors uppercase">
-            Studio
+            Documentation & Tutorials
           </Link>
           <Link href="/login" className="hidden sm:block text-sm font-bold tracking-widest text-[#A0A0A0] hover:text-white transition-colors uppercase">
             Sign In
