@@ -130,7 +130,11 @@ export default function DashboardPage() {
                 <div className="relative">
                     <div className="absolute -left-6 top-1/2 -translate-y-1/2 w-1 h-12 bg-[#E2FF00] rounded-r-md hidden md:block"></div>
                     <h1 className="text-4xl md:text-5xl font-heading font-normal text-slate-900 dark:text-[#E2FF00] tracking-tight">
-                        Command Center
+                        {user?.role === 'admin' ? 'Command Center' : 
+                         user?.role === 'finance' ? 'Financial Hub' :
+                         user?.role === 'sales' ? 'Sales Pipeline' :
+                         user?.role === 'hr_manager' ? 'People Portal' :
+                         'Workstation'}
                     </h1>
                     <p className="mt-3 text-slate-500 dark:text-slate-400 font-medium">
                         Welcome back, <span className="font-bold text-slate-800 dark:text-slate-200">{user?.first_name}</span>. Global overview synchronized.
@@ -251,11 +255,16 @@ export default function DashboardPage() {
                         <h3 className="text-sm font-bold uppercase tracking-widest text-slate-500 mb-4 px-2">Quick Commands</h3>
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                             {[
-                                { name: "Create Invoice", icon: FileText, color: "bg-blue-500", link: "/sales" },
-                                { name: "View Orders", icon: Plus, color: "bg-emerald-500", link: "/sales" },
-                                { name: "New Product", icon: Package, color: "bg-amber-500", link: "/inventory" },
-                                { name: "HR & People", icon: Briefcase, color: "bg-indigo-500", link: "/hr" }
-                            ].map((action, i) => (
+                                { name: "Create Invoice", icon: FileText, color: "bg-blue-500", link: "/sales", roles: ['admin', 'manager', 'sales', 'finance'] },
+                                { name: "View Orders", icon: Plus, color: "bg-emerald-500", link: "/sales", roles: ['admin', 'manager', 'sales', 'staff', 'auditor'] },
+                                { name: "New Product", icon: Package, color: "bg-amber-500", link: "/inventory", roles: ['admin', 'manager', 'sales'] },
+                                { name: "HR & People", icon: Briefcase, color: "bg-indigo-500", link: "/hr", roles: ['admin', 'manager', 'hr_manager'] },
+                                { name: "Audit Trail", icon: Activity, color: "bg-slate-500", link: "/audit", roles: ['admin', 'auditor'] },
+                                { name: "Budgets", icon: DollarSign, color: "bg-purple-500", link: "/finance", roles: ['admin', 'finance'] },
+                            ]
+                            .filter(action => !action.roles || (user?.role && action.roles.includes(user.role)))
+                            .slice(0, 4) // Keep it to 4 items for layout
+                            .map((action, i) => (
                                 <a href={action.link} key={i} className="flex flex-col items-center justify-center p-6 bg-white dark:bg-[#0E0E0E] border border-slate-200 dark:border-slate-800 rounded-3xl hover:border-slate-300 dark:hover:border-slate-600 transition-all group shadow-sm hover:shadow-md">
                                     <div className={`w-12 h-12 rounded-full ${action.color} flex items-center justify-center text-white shadow-lg mb-3 group-hover:scale-110 transition-transform`}>
                                         <action.icon className="w-5 h-5" />

@@ -28,6 +28,7 @@ const NAV_GROUPS = [
     },
     {
         label: "Operations",
+        roles: ['admin', 'manager', 'sales', 'staff', 'auditor'],
         items: [
             { name: 'Inventory', href: '/inventory', icon: Package },
             { name: 'Sales & Orders', href: '/sales', icon: ShoppingCart },
@@ -36,6 +37,7 @@ const NAV_GROUPS = [
     },
     {
         label: "Finance",
+        roles: ['admin', 'manager', 'finance', 'auditor'],
         items: [
             { name: 'Finance & Accounts', href: '/finance', icon: DollarSign },
             { name: 'Reports', href: '/reports', icon: BarChart3 },
@@ -43,15 +45,17 @@ const NAV_GROUPS = [
     },
     {
         label: "People",
+        roles: ['admin', 'manager', 'hr_manager'],
         items: [
             { name: 'HR & People', href: '/hr', icon: Building2 },
         ]
     },
     {
         label: "System",
+        roles: ['admin', 'manager'],
         items: [
-            { name: 'Smart Reports', href: '/reports', icon: FileText },
-            { name: 'Settings', href: '/settings', icon: Settings },
+            { name: 'Smart Reports', href: '/reports', icon: FileText, roles: ['admin'] },
+            { name: 'Settings', href: '/settings', icon: Settings, roles: ['admin'] },
         ]
     }
 ];
@@ -75,33 +79,35 @@ export default function Sidebar() {
 
                 {/* Nav Links */}
                 <div className="flex flex-col h-0 flex-1 overflow-y-auto px-3 py-5 space-y-5">
-                    {NAV_GROUPS.map((group) => (
+                    {NAV_GROUPS.filter(group => !group.roles || (user?.role && group.roles.includes(user.role))).map((group) => (
                         <div key={group.label}>
                             <p className="text-[10px] font-bold text-slate-400 dark:text-slate-600 uppercase tracking-widest mb-2 px-3">
                                 {group.label}
                             </p>
                             <nav className="space-y-0.5">
-                                {group.items.map((navItem) => {
-                                    const isActive = pathname === navItem.href || pathname.startsWith(navItem.href + '/');
-                                    return (
-                                        <Link
-                                            key={navItem.href}
-                                            href={navItem.href}
-                                            className={`
-                                                group flex items-center px-3 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200
-                                                ${isActive
-                                                    ? 'bg-brand-50 dark:bg-brand-500/10 text-brand-700 dark:text-brand-300 shadow-sm border border-brand-100 dark:border-brand-500/20'
-                                                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-slate-200 border border-transparent'
-                                                }
-                                            `}
-                                        >
-                                            <navItem.icon
-                                                className={`flex-shrink-0 mr-3 h-4 w-4 transition-colors ${ isActive ? 'text-brand-600 dark:text-brand-400' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`}
-                                            />
-                                            {navItem.name}
-                                        </Link>
-                                    );
-                                })}
+                                {group.items
+                                    .filter(item => !item.roles || (user?.role && item.roles.includes(user.role)))
+                                    .map((navItem) => {
+                                        const isActive = pathname === navItem.href || pathname.startsWith(navItem.href + '/');
+                                        return (
+                                            <Link
+                                                key={navItem.href}
+                                                href={navItem.href}
+                                                className={`
+                                                    group flex items-center px-3 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200
+                                                    ${isActive
+                                                        ? 'bg-brand-50 dark:bg-brand-500/10 text-brand-700 dark:text-brand-300 shadow-sm border border-brand-100 dark:border-brand-500/20'
+                                                        : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-slate-200 border border-transparent'
+                                                    }
+                                                `}
+                                            >
+                                                <navItem.icon
+                                                    className={`flex-shrink-0 mr-3 h-4 w-4 transition-colors ${ isActive ? 'text-brand-600 dark:text-brand-400' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`}
+                                                />
+                                                {navItem.name}
+                                            </Link>
+                                        );
+                                    })}
                             </nav>
                         </div>
                     ))}

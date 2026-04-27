@@ -157,7 +157,9 @@ export default function SettingsPage() {
                     <h2 className="text-xl font-heading font-bold text-slate-900 dark:text-white">{user?.first_name} {user?.last_name}</h2>
                     <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">{user?.email}</p>
                     <div className="flex items-center gap-2 mt-2">
-                        <span className="inline-flex items-center gap-1 text-xs font-bold bg-brand-50 dark:bg-brand-500/10 text-brand-700 dark:text-brand-400 px-2.5 py-1 rounded-full"><Check className="w-3 h-3" /> Admin</span>
+                        <span className="inline-flex items-center gap-1 text-xs font-bold bg-brand-50 dark:bg-brand-500/10 text-brand-700 dark:text-brand-400 px-2.5 py-1 rounded-full">
+                            <Check className="w-3 h-3" /> {user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1).replace('_', ' ') : 'User'}
+                        </span>
                         <span className="text-xs font-medium text-slate-400">Main Company</span>
                     </div>
                 </div>
