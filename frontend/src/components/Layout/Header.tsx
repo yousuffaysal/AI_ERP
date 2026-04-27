@@ -49,10 +49,10 @@ export default function Header() {
                     <div className="flex items-center gap-3 pl-2">
                         <div className="flex flex-col items-end hidden sm:flex">
                             <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 leading-none">
-                                {user?.first_name || 'Admin'} {user?.last_name || 'User'}
+                                {user?.first_name ? `${user.first_name} ${user.last_name || ''}` : 'User'}
                             </span>
                             <span className="text-xs text-brand-600 dark:text-brand-400 font-medium mt-1">
-                                {user?.role || 'Administrator'}
+                                {user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1).replace('_', ' ') : 'Employee'}
                             </span>
                         </div>
                         <div className="h-8 w-8 rounded-full bg-gradient-to-br from-indigo-100 to-brand-100 dark:from-indigo-900/50 dark:to-brand-900/50 border border-indigo-200 dark:border-indigo-800 flex items-center justify-center text-brand-700 dark:text-brand-300 font-bold shadow-sm cursor-pointer hover:shadow-md transition-shadow">
