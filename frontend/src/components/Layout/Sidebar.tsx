@@ -64,6 +64,12 @@ const NAV_GROUPS: NavGroup[] = [
         ]
     },
     {
+        label: "Partners",
+        items: [
+            { name: 'Foxmen Studio', href: '/foxmen-studio', icon: Star },
+        ]
+    },
+    {
         label: "System",
         roles: ['admin', 'manager'],
         items: [
