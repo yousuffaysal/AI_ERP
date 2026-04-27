@@ -15,7 +15,8 @@ import {
     Users,
     BarChart3,
     ChevronDown,
-    LogOut
+    LogOut,
+    Star
 } from 'lucide-react';
 import { useState } from 'react';
 
