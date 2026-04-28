@@ -27,10 +27,13 @@ class AIClient:
         cache_key = f"ai_health_score_{company_id}"
         
         # 1. Check Redis Cache
-        cached_result = await cache.aget(cache_key)
-        if cached_result:
-            logger.debug(f"Cache hit for health score: {company_id}")
-            return cached_result
+        try:
+            cached_result = await cache.aget(cache_key)
+            if cached_result:
+                logger.debug(f"Cache hit for health score: {company_id}")
+                return cached_result
+        except Exception as e:
+            logger.warning(f"Cache read failed for health score: {str(e)}")
             
         # 2. Make Async HTTP Request
         url = f"{self.base_url}/api/v1/health/score"
@@ -43,7 +46,10 @@ class AIClient:
                 data = response.json()
                 
                 # 3. Save to Redis Cache (3600 seconds = 1 hour)
-                await cache.aset(cache_key, data, timeout=3600)
+                try:
+                    await cache.aset(cache_key, data, timeout=3600)
+                except Exception as e:
+                    logger.warning(f"Cache write failed for health score: {str(e)}")
                 
                 return data
                 
