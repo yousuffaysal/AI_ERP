@@ -79,5 +79,7 @@ class QueryBuilder:
                 qs = qs.values(*select_fields)
             except Exception:
                 raise ValueError("Invalid fields requested in select_fields.")
+        else:
+            qs = qs.values()
             
         return qs
