@@ -18,7 +18,7 @@ client.force_authenticate(user=u)
 
 try:
     response = client.post(f'/api/v1/reports/generate/', {
-        "model": "Invoice",
+        "model": "sales_invoice",
         "format": "excel",
         "filters": {}
     }, format='json', HTTP_HOST='testserver')
