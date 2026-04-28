@@ -64,7 +64,8 @@ class SpreadsheetGenerator:
         # Simple auto-sizing columns
         for col in ws.columns:
             max_length = 0
-            column = col[0].column_letter # Get the column name
+            # Use the header row cell (index 2 corresponds to row 3) since it's never a MergedCell
+            column = col[2].column_letter
             for cell in col:
                 try:
                     if len(str(cell.value)) > max_length:
