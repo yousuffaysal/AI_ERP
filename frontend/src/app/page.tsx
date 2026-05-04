@@ -1,16 +1,30 @@
 "use client";
 
 import Link from "next/link";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { ArrowRight, Box, BrainCircuit, Fingerprint, Layers, Activity, LineChart, Globe } from "lucide-react";
-import { useRef } from "react";
+import { motion, useScroll, useTransform, useSpring } from "framer-motion";
+import { ArrowRight, Box, BrainCircuit, Fingerprint, Layers, Activity, LineChart, Globe, ShieldCheck, Zap, Cpu, Lock } from "lucide-react";
+import { useRef, useState, useEffect } from "react";
 
 export default function LandingPage() {
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => setIsMounted(true), []);
+  
   const containerRef = useRef<HTMLDivElement>(null);
+  const revealRef = useRef<HTMLDivElement>(null);
+  
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end end"]
   });
+
+  // Reveal Section Scroll Tracking
+  const { scrollYProgress: revealProgress } = useScroll({
+    target: revealRef,
+    offset: ["start end", "end start"]
+  });
+
+  const maskSize = useTransform(revealProgress, [0.1, 0.9], ["20%", "150%"]);
+  const opacityReveal = useTransform(revealProgress, [0, 0.2, 0.9, 1], [0, 1, 1, 1]);
 
   return (
     <div ref={containerRef} className="min-h-screen bg-[#030303] text-[#EAEAEA] selection:bg-[#E2FF00] selection:text-black font-sans overflow-x-hidden">
@@ -36,40 +50,59 @@ export default function LandingPage() {
       </div>
 
       {/* Navigation */}
-      <nav className="relative z-50 w-full py-8 px-6 md:px-16 flex justify-between items-center animate-fade-in-down" style={{ animationDelay: '0.1s', animationFillMode: 'both' }}>
+      <nav className="fixed top-0 left-0 right-0 z-[100] w-full py-6 px-6 md:px-16 flex justify-between items-center backdrop-blur-md bg-black/20 border-b border-white/5">
         <div className="font-heading text-3xl tracking-tight text-[#EAEAEA]">
           CORE<span className="text-[#E2FF00] italic">.</span>ERP
         </div>
         <div className="flex gap-8 items-center">
-          <Link href="/about" className="hidden md:block text-sm font-bold tracking-widest text-[#A0A0A0] hover:text-[#E2FF00] transition-colors uppercase">About</Link>
-          <Link href="/pricing" className="hidden md:block text-sm font-bold tracking-widest text-[#A0A0A0] hover:text-[#E2FF00] transition-colors uppercase">Pricing</Link>
-          <Link href="/guide" className="hidden md:block text-sm font-bold tracking-widest text-[#A0A0A0] hover:text-[#E2FF00] transition-colors uppercase">Guide</Link>
-          <Link href="/contact" className="hidden md:block text-sm font-bold tracking-widest text-[#A0A0A0] hover:text-[#E2FF00] transition-colors uppercase">Contact</Link>
-          <Link href="/login" className="hidden sm:block text-sm font-bold tracking-widest text-[#A0A0A0] hover:text-white transition-colors uppercase">Sign In</Link>
-          <Link href="/login" className="h-12 px-6 inline-flex items-center justify-center bg-[#E2FF00] text-black text-sm font-bold uppercase tracking-widest hover:bg-white transition-colors rounded-none">
+          <Link href="/about" className="hidden md:block text-xs font-bold tracking-[0.2em] text-[#A0A0A0] hover:text-[#E2FF00] transition-colors uppercase">About</Link>
+          <Link href="/pricing" className="hidden md:block text-xs font-bold tracking-[0.2em] text-[#A0A0A0] hover:text-[#E2FF00] transition-colors uppercase">Pricing</Link>
+          <Link href="/guide" className="hidden md:block text-xs font-bold tracking-[0.2em] text-[#A0A0A0] hover:text-[#E2FF00] transition-colors uppercase">Guide</Link>
+          <Link href="/login" className="hidden sm:block text-xs font-bold tracking-[0.2em] text-[#A0A0A0] hover:text-white transition-colors uppercase">Sign In</Link>
+          <Link href="/login" className="h-10 px-5 inline-flex items-center justify-center bg-[#E2FF00] text-black text-sm font-black uppercase tracking-[0.15em] hover:bg-white transition-all rounded-sm">
             Access Terminal
           </Link>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <main className="relative z-10 flex flex-col items-center justify-center min-h-[85vh] px-6 text-center mt-[-5vh]">
+      <main className="relative z-10 flex flex-col items-center justify-center min-h-[100vh] px-6 text-center pt-20">
         <div className="inline-block mb-10 overflow-hidden">
-          <p className="font-mono text-xs md:text-sm tracking-[0.4em] text-[#E2FF00] uppercase animate-slide-up" style={{ animationDelay: '0.4s', animationFillMode: 'both' }}>
+          <motion.p 
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            className="font-mono text-xs md:text-sm tracking-[0.4em] text-[#E2FF00] uppercase"
+          >
             System Build 2.0.4 — Online
-          </p>
+          </motion.p>
         </div>
 
-        <h1 className="font-heading text-[5rem] sm:text-[7xl] md:text-8xl lg:text-[12rem] xl:text-[14rem] leading-[0.8] text-white tracking-tighter mb-12 animate-slide-up drop-shadow-2xl" style={{ animationDelay: '0.6s', animationFillMode: 'both' }}>
+        <motion.h1 
+          initial={{ y: 40, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.6, duration: 0.8 }}
+          className="font-heading text-[4rem] sm:text-[7xl] md:text-8xl lg:text-[10rem] xl:text-[12rem] leading-[0.8] text-white tracking-tighter mb-12 drop-shadow-2xl"
+        >
           Compute <br/>
           <span className="italic text-transparent bg-clip-text bg-gradient-to-r from-[#A0A0A0] to-[#555555] font-normal">Business.</span>
-        </h1>
+        </motion.h1>
 
-        <p className="max-w-3xl text-[#888888] text-xl md:text-2xl font-medium leading-relaxed mb-16 animate-slide-up" style={{ animationDelay: '0.8s', animationFillMode: 'both' }}>
+        <motion.p 
+          initial={{ y: 40, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.8 }}
+          className="max-w-3xl text-[#888888] text-xl md:text-2xl font-medium leading-relaxed mb-16"
+        >
           Transcend traditional resource planning. Core ERP unifies sales, inventory, and human capital into a singular, high-velocity intelligence matrix powered by predictive AI.
-        </p>
+        </motion.p>
 
-        <div className="flex flex-col sm:flex-row gap-6 animate-slide-up" style={{ animationDelay: '1.0s', animationFillMode: 'both' }}>
+        <motion.div 
+          initial={{ y: 40, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 1.0 }}
+          className="flex flex-col sm:flex-row gap-6"
+        >
           <Link href="/login" className="group relative h-16 w-full sm:w-72 flex items-center justify-center bg-white text-black font-extrabold text-lg uppercase tracking-widest overflow-hidden transition-transform hover:scale-[1.02]">
             <span className="absolute inset-0 bg-[#E2FF00] translate-y-[100%] group-hover:translate-y-0 transition-transform duration-300 ease-in-out" />
             <span className="relative z-10 flex items-center gap-4">
@@ -81,10 +114,20 @@ export default function LandingPage() {
           <a href="#manifesto" className="h-16 w-full sm:w-72 flex items-center justify-center border border-[#333333] text-white font-extrabold text-lg uppercase tracking-widest hover:bg-[#111111] transition-colors">
             Read Manifesto
           </a>
-        </div>
+        </motion.div>
+
+        {/* Scroll Indicator */}
+        <motion.div 
+          animate={{ y: [0, 10, 0] }}
+          transition={{ repeat: Infinity, duration: 2 }}
+          className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+        >
+           <span className="text-[10px] font-mono tracking-[0.3em] text-[#444444] uppercase">Scroll</span>
+           <div className="w-px h-12 bg-gradient-to-b from-[#E2FF00] to-transparent" />
+        </motion.div>
       </main>
 
-      {/* Metrics Section: Brutalist Impact */}
+      {/* Metrics Section */}
       <section className="relative z-10 py-32 px-6 md:px-16 border-y border-[#1A1A1A] bg-[#0A0A0A] overflow-hidden">
         <div className="max-w-screen-2xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-16 md:gap-8">
           {[
@@ -105,6 +148,137 @@ export default function LandingPage() {
             </motion.div>
           ))}
         </div>
+      </section>
+
+      {/* NEW: Scroll Reveal Mask Section */}
+      <section ref={revealRef} className="relative z-10 h-[140vh] bg-[#030303]">
+        <div className="sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden">
+          {/* Background Layer (Hidden) */}
+          <div className="absolute inset-0 bg-[#0A0A0A] flex items-center justify-center">
+             <div className="max-w-3xl text-center px-6">
+                <h2 className="text-[#333333] text-[10vw] font-black uppercase tracking-tighter opacity-10">Intelligence</h2>
+             </div>
+          </div>
+
+          {/* Reveal Layer (Masked) */}
+          <motion.div 
+            className="absolute inset-0 z-20 flex items-center justify-center bg-[#E2FF00]"
+            style={{
+              clipPath: `circle(${maskSize} at center)`,
+              opacity: opacityReveal
+            }}
+          >
+            <div className="relative w-full h-full overflow-hidden flex items-center justify-center">
+               <img 
+                 src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=2070" 
+                 className="absolute inset-0 w-full h-full object-cover opacity-30 grayscale mix-blend-multiply"
+                 alt="Neural Grid"
+               />
+               <div className="relative z-10 max-w-5xl text-center px-6">
+                  <motion.span className="inline-block px-4 py-1 border-2 border-black text-black font-mono text-sm font-black uppercase mb-8">Neural Synchronization</motion.span>
+                  <h2 className="font-heading text-6xl md:text-9xl text-black tracking-tighter leading-none mb-12">
+                    The Invisible <br/> Hand.
+                  </h2>
+                  <p className="max-w-2xl mx-auto text-black/70 text-xl md:text-2xl font-bold leading-tight">
+                    CORE doesn't just record inventory; it prophecies it. A hidden matrix of predictive nodes recalculating your success at every pulse.
+                  </p>
+               </div>
+            </div>
+          </motion.div>
+
+          <motion.div 
+            style={{ opacity: useTransform(revealProgress, [0.1, 0.3], [1, 0]) }}
+            className="relative z-10 text-center"
+          >
+             <h3 className="text-4xl md:text-6xl font-heading tracking-tight text-[#444444]">Reveal the Core.</h3>
+             <p className="mt-4 font-mono text-[#444444] uppercase tracking-widest">Keep scrolling to synchronize</p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* NEW: Data Storm Transition (After Effects Style) */}
+      <section className="relative z-10 h-[100vh] w-full overflow-hidden bg-black border-y border-white/5">
+         <motion.div 
+           initial={{ opacity: 0 }}
+           whileInView={{ opacity: 1 }}
+           transition={{ duration: 1.5 }}
+           className="absolute inset-0 z-0"
+         >
+            <img 
+              src="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=2070" 
+              className="w-full h-full object-cover opacity-20 scale-110"
+              alt="Data Circuits"
+            />
+            {/* The Cinematic Data Storm Image */}
+            <motion.div 
+              className="absolute inset-0 z-10"
+              style={{
+                backgroundImage: `url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=2072')`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                opacity: 0.4,
+                mixBlendMode: 'screen'
+              }}
+              animate={{ 
+                scale: [1, 1.1, 1],
+                filter: ['hue-rotate(0deg)', 'hue-rotate(30deg)', 'hue-rotate(0deg)']
+              }}
+              transition={{ repeat: Infinity, duration: 20, ease: "linear" }}
+            />
+         </motion.div>
+
+         <div className="relative z-20 h-full w-full flex flex-col items-center justify-center text-center px-6">
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              whileInView={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+              className="max-w-6xl"
+            >
+               <h2 className="font-heading text-7xl md:text-[12rem] text-white tracking-tighter leading-none mb-12 drop-shadow-[0_0_80px_rgba(255,255,255,0.2)]">
+                  Velocity <br/>
+                  <span className="italic text-[#E2FF00]">Matrix.</span>
+               </h2>
+               <div className="flex items-center justify-center gap-12">
+                  <div className="flex flex-col items-center">
+                     <span className="font-mono text-[#E2FF00] text-3xl md:text-5xl mb-2">94TB/s</span>
+                     <span className="text-xs font-bold text-[#888888] uppercase tracking-[0.4em]">Throughput</span>
+                  </div>
+                  <div className="w-px h-16 bg-white/10" />
+                  <div className="flex flex-col items-center">
+                     <span className="font-mono text-white text-3xl md:text-5xl mb-2">0.001%</span>
+                     <span className="text-xs font-bold text-[#888888] uppercase tracking-[0.4em]">Error Rate</span>
+                  </div>
+               </div>
+            </motion.div>
+
+            {/* Floating Data Particles (Simulated AE style) */}
+            {isMounted && Array.from({ length: 20 }).map((_, i) => (
+              <motion.div
+                key={i}
+                className="absolute w-1 h-1 bg-[#E2FF00] rounded-full blur-[1px]"
+                initial={{ 
+                  x: Math.random() * 2000 - 1000, 
+                  y: Math.random() * 1000 - 500, 
+                  opacity: 0 
+                }}
+                animate={{ 
+                  x: Math.random() * 2000 - 1000, 
+                  y: Math.random() * 1000 - 500, 
+                  opacity: [0, 1, 0],
+                  scale: [1, 2, 1]
+                }}
+                transition={{ 
+                  repeat: Infinity, 
+                  duration: 2 + Math.random() * 5, 
+                  ease: "easeInOut" 
+                }}
+              />
+            ))}
+         </div>
+
+         {/* Vignette Overlay */}
+         <div className="absolute inset-0 z-30 pointer-events-none bg-gradient-to-b from-black via-transparent to-black opacity-80" />
+         <div className="absolute inset-0 z-30 pointer-events-none bg-gradient-to-r from-black via-transparent to-black opacity-60" />
       </section>
 
       {/* The Manifesto Section */}
@@ -132,7 +306,7 @@ export default function LandingPage() {
               We engineered CORE because modern logistics networks and pricing elasticity operate on permutations too vast for human intuition to map.
             </p>
             <p className="mb-8 break-inside-avoid">
-              CORE doesn't just record inventory; it prophecies it. By anchoring our architecture to distributed Python machine learning nodes running XGBoost and 
+              CORE anchors our architecture to distributed Python machine learning nodes running XGBoost and 
               deep neural nets, the platform continuously recalculates operational health, rendering human guesswork obsolete.
             </p>
             <p className="break-inside-avoid font-black uppercase tracking-widest text-sm border-t-2 border-black pt-8">
@@ -142,7 +316,82 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Feature Grid - Structural Brutalist Layout */}
+      {/* NEW: Operational Pulse Section */}
+      <section className="relative z-10 py-40 px-6 md:px-16 bg-[#030303] overflow-hidden">
+        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-20 items-center">
+           <div className="lg:w-1/2">
+              <span className="flex items-center gap-3 text-[#E2FF00] font-mono text-xs tracking-[0.4em] uppercase mb-8">
+                 <Activity className="w-4 h-4 animate-pulse" /> Kinetic Operations
+              </span>
+              <h2 className="font-heading text-5xl md:text-8xl text-white tracking-tighter leading-none mb-10">
+                Pulse of <br/> the Machine.
+              </h2>
+              <div className="space-y-8">
+                 {[
+                   { icon: Zap, title: "Real-time Processing", desc: "Every transaction, every movement, processed in sub-millisecond windows." },
+                   { icon: Cpu, title: "Distributed Compute", desc: "Parallel processing across multi-region nodes ensures zero downtime." },
+                   { icon: Lock, title: "Immutable Security", desc: "End-to-end encryption at the hardware level for all financial data." }
+                 ].map((item, i) => (
+                   <motion.div 
+                     key={i}
+                     initial={{ opacity: 0, x: -20 }}
+                     whileInView={{ opacity: 1, x: 0 }}
+                     transition={{ delay: i * 0.1 }}
+                     className="flex gap-6 items-start"
+                   >
+                      <div className="mt-1 p-3 bg-white/5 border border-white/10 rounded-xl text-[#E2FF00]">
+                         <item.icon className="w-6 h-6" />
+                      </div>
+                      <div>
+                         <h4 className="text-white font-bold text-xl mb-2">{item.title}</h4>
+                         <p className="text-[#666666] leading-relaxed">{item.desc}</p>
+                      </div>
+                   </motion.div>
+                 ))}
+              </div>
+           </div>
+           
+           <div className="lg:w-1/2 relative group">
+              <div className="absolute -inset-4 bg-gradient-to-r from-[#E2FF00]/20 to-purple-500/20 rounded-[2rem] blur-2xl opacity-50 group-hover:opacity-100 transition-opacity duration-700" />
+              <div className="relative bg-[#0A0A0A] border border-white/10 rounded-[2rem] p-4 md:p-8 overflow-hidden aspect-square flex items-center justify-center">
+                 <div className="absolute inset-0 opacity-10" 
+                      style={{ 
+                        backgroundImage: 'radial-gradient(#E2FF00 1px, transparent 1px)', 
+                        backgroundSize: '20px 20px' 
+                      }} />
+                 
+                 {/* Visual Representation of Pulse */}
+                 <div className="relative w-full h-full flex items-center justify-center">
+                    {Array.from({ length: 12 }).map((_, i) => (
+                      <motion.div 
+                        key={i}
+                        className="absolute border-2 border-[#E2FF00]/30 rounded-full"
+                        animate={{ 
+                          scale: [1, 1.5, 2], 
+                          opacity: [0.5, 0.2, 0],
+                        }}
+                        transition={{ 
+                          repeat: Infinity, 
+                          duration: 3, 
+                          delay: i * 0.25,
+                          ease: "linear"
+                        }}
+                        style={{ 
+                          width: `${(i + 1) * 10}%`,
+                          height: `${(i + 1) * 10}%`,
+                        }}
+                      />
+                    ))}
+                    <div className="z-10 bg-[#E2FF00] p-8 rounded-full shadow-[0_0_50px_rgba(226,255,0,0.4)]">
+                       <Activity className="w-12 h-12 text-black" />
+                    </div>
+                 </div>
+              </div>
+           </div>
+        </div>
+      </section>
+
+      {/* Feature Grid */}
       <section id="architecture" className="relative z-10 py-40 px-6 md:px-16 bg-[#030303] border-t border-[#1A1A1A]">
         <div className="max-w-7xl mx-auto">
           <motion.div 
@@ -235,7 +484,7 @@ export default function LandingPage() {
                 />
                 <circle cx="20" cy="30" r="1.5" fill="#E2FF00" />
                 <circle cx="40" cy="50" r="1.5" fill="#E2FF00" />
-                <circle cx="70" cy="20" r="1.5" fill="#white" />
+                <circle cx="70" cy="20" r="1.5" fill="white" />
                 <circle cx="80" cy="60" r="1.5" fill="#E2FF00" />
               </svg>
             </motion.div>
@@ -296,6 +545,58 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* NEW: Intelligence Mesh Section */}
+      <section className="relative z-10 py-40 px-6 md:px-16 border-t border-[#1A1A1A] bg-[#000000] overflow-hidden">
+         <div className="max-w-7xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
+               <motion.div 
+                 initial={{ opacity: 0, scale: 0.9 }}
+                 whileInView={{ opacity: 1, scale: 1 }}
+                 className="relative aspect-video bg-[#0A0A0A] border border-white/5 rounded-3xl overflow-hidden group"
+               >
+                  <img 
+                    src="https://images.unsplash.com/photo-1558494949-ef010cbdcc51?auto=format&fit=crop&q=80&w=2000" 
+                    className="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:scale-110 transition-transform duration-[2s]"
+                    alt="Datacenter"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
+                  <div className="absolute bottom-8 left-8 right-8">
+                     <div className="flex items-center gap-4 text-[#E2FF00] mb-4">
+                        <ShieldCheck className="w-6 h-6" />
+                        <span className="font-mono text-xs tracking-widest uppercase">Verified Node.042</span>
+                     </div>
+                     <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                        <motion.div 
+                          className="h-full bg-[#E2FF00]"
+                          animate={{ width: ["0%", "85%", "70%", "95%"] }}
+                          transition={{ repeat: Infinity, duration: 10, ease: "easeInOut" }}
+                        />
+                     </div>
+                  </div>
+               </motion.div>
+
+               <div>
+                  <h2 className="font-heading text-5xl md:text-8xl text-white tracking-tighter leading-none mb-8">
+                    Scale Without <br/> Friction.
+                  </h2>
+                  <p className="text-[#888888] text-xl font-medium leading-relaxed mb-12">
+                    CORE handles the complexity of global scale so you can focus on the velocity of your growth. Our distributed architecture ensures that as you add warehouses, users, and territories, the system actually gets faster through data-locality optimization.
+                  </p>
+                  <div className="grid grid-cols-2 gap-8">
+                     <div>
+                        <p className="text-3xl font-heading text-white mb-2">99.999%</p>
+                        <p className="text-xs font-bold text-[#444444] uppercase tracking-widest">Uptime SLA</p>
+                     </div>
+                     <div>
+                        <p className="text-3xl font-heading text-white mb-2">Multi-Region</p>
+                        <p className="text-xs font-bold text-[#444444] uppercase tracking-widest">Failover Support</p>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </section>
+
       {/* Massive Call to Action */}
       <section className="relative z-10 py-60 px-6 md:px-16 border-t border-[#1A1A1A] bg-[#E2FF00] flex flex-col items-center justify-center group overflow-hidden cursor-pointer" onClick={() => window.location.href='/login'}>
         {/* Animated Background Rays */}
@@ -335,29 +636,15 @@ export default function LandingPage() {
           </div>
         </div>
         
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center border-t border-[#222222] pt-8 text-[#555555] font-bold uppercase text-xs tracking-widest">
-          <p>© 2026 Foxmen Studio. All rights reserved.</p>
-          <p className="mt-4 md:mt-0">Built for precision.</p>
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center border-t border-[#222222] pt-8 text-[#555555] font-bold uppercase text-[10px] tracking-[0.3em]">
+          <div className="flex gap-8 mb-4 md:mb-0">
+            <span className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#E2FF00] animate-pulse" /> Neural Load: 14%</span>
+            <span className="flex items-center gap-2 text-white/20"><div className="w-1.5 h-1.5 rounded-full bg-blue-500" /> Active Nodes: 1,024</span>
+            <span className="flex items-center gap-2 text-white/20"><div className="w-1.5 h-1.5 rounded-full bg-purple-500" /> Latency: 0.4ms</span>
+          </div>
+          <p>© 2026 Foxmen Studio. All rights reserved. Built for precision.</p>
         </div>
       </footer>
-
-      {/* Native CSS Keyframes for initial load */}
-      <style dangerouslySetInnerHTML={{__html: `
-        @keyframes slide-up {
-          0% { opacity: 0; transform: translateY(60px); }
-          100% { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes fade-in-down {
-          0% { opacity: 0; transform: translateY(-20px); }
-          100% { opacity: 1; transform: translateY(0); }
-        }
-        .animate-slide-up {
-          animation: slide-up 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-        .animate-fade-in-down {
-          animation: fade-in-down 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-      `}} />
     </div>
   );
 }
