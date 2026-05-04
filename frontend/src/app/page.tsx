@@ -206,19 +206,24 @@ export default function LandingPage() {
            transition={{ duration: 1.5 }}
            className="absolute inset-0 z-0"
          >
+            <img 
+              src="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=2070" 
+              className="w-full h-full object-cover opacity-20 scale-110"
+              alt="Data Circuits"
+            />
             {/* The Cinematic Data Storm Image */}
             <motion.div 
               className="absolute inset-0 z-10"
               style={{
-                backgroundImage: `url('/digital_data_storm_background_1777916810113.png')`,
+                backgroundImage: `url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=2072')`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
-                opacity: 0.6,
+                opacity: 0.4,
                 mixBlendMode: 'screen'
               }}
               animate={{ 
-                scale: [1, 1.05, 1],
-                filter: ['hue-rotate(0deg)', 'hue-rotate(15deg)', 'hue-rotate(0deg)']
+                scale: [1, 1.1, 1],
+                filter: ['hue-rotate(0deg)', 'hue-rotate(30deg)', 'hue-rotate(0deg)']
               }}
               transition={{ repeat: Infinity, duration: 20, ease: "linear" }}
             />
