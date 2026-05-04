@@ -171,8 +171,8 @@ export default function LandingPage() {
           >
             <div className="relative w-full h-full overflow-hidden flex items-center justify-center">
                <motion.img 
-                 src="/ai_neural_grid_background_1777916058914.png" 
-                 className="absolute inset-0 w-full h-full object-cover opacity-40 grayscale mix-blend-multiply"
+                 src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=2070" 
+                 className="absolute inset-0 w-full h-full object-cover opacity-30 grayscale mix-blend-multiply"
                  style={{ scale: imageScale }}
                  alt="Neural Grid"
                />
