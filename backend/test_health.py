@@ -14,7 +14,7 @@ from rest_framework.test import APIClient
 from apps.accounts.models import User
 
 c = Company.objects.first()
-u = User.objects.first()
+u = User.objects.get(email='admin@erp.io')
 client = APIClient()
 client.force_authenticate(user=u)
 

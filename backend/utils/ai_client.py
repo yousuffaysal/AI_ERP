@@ -40,10 +40,24 @@ class AIClient:
     Uses llama-3.3-70b-versatile via Groq's API for fast inference.
     """
 
-    def get_health_score(self, company_id: UUID, metrics: Dict[str, Any] = None) -> Dict[str, Any]:
+    async def get_health_score(self, company_id: UUID, metrics: Dict[str, Any] = None) -> Dict[str, Any]:
         """
-        Generate a business health score and explanation based on company metrics.
+        Generate a business health score. Tries Dedicated AI Service first, falls back to Groq.
         """
+        # 1. Try Dedicated AI Service (FastAPI)
+        try:
+            import httpx
+            url = f"{settings.AI_SERVICE_URL}/api/v1/health/score"
+            async with httpx.AsyncClient() as http_client:
+                response = await http_client.get(url, params={"company_id": str(company_id)}, timeout=5.0)
+                if response.status_code == 200:
+                    return response.json()
+                else:
+                    logger.warning(f"AI Service returned {response.status_code}: {response.text}")
+        except Exception as e:
+            logger.warning(f"AI Service health score failed, falling back to Groq: {e}")
+
+        # 2. Fallback to Groq LLM logic
         if not settings.GROQ_API_KEY:
             return self._fallback_health_score(company_id)
 
@@ -65,7 +79,9 @@ class AIClient:
                     "content": f"Company ID: {company_id}\n\nMetrics:\n{metrics_text}",
                 },
             ]
-            raw = _chat(messages)
+            # _chat is synchronous, so we run it in a thread to avoid blocking the event loop
+            import asyncio
+            raw = await asyncio.to_thread(_chat, messages)
             data = _parse_json(raw)
             data["company_id"] = str(company_id)
             return data

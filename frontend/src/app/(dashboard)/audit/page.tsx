@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Fragment } from 'react';
 import { api } from '@/lib/api';
 import { motion } from 'framer-motion';
 import {
@@ -171,8 +171,8 @@ export default function AuditPage() {
                                 const cfg = ACTION_CONFIG[e.action] || ACTION_CONFIG.login;
                                 const Icon = cfg.icon;
                                 return (
-                                    <>
-                                        <tr key={e.id} onClick={() => setExpandedId(expandedId === e.id ? null : e.id)}
+                                    <Fragment key={e.id}>
+                                        <tr onClick={() => setExpandedId(expandedId === e.id ? null : e.id)}
                                             className={`hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer ${e.severity === 'critical' ? 'bg-red-50/30 dark:bg-red-500/5' : ''}`}>
                                             <td className="py-3 px-4">
                                                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${cfg.bg}`}>
@@ -217,7 +217,7 @@ export default function AuditPage() {
                                                 </td>
                                             </tr>
                                         )}
-                                    </>
+                                    </Fragment>
                                 );
                             })}
                         </tbody>
