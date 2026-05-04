@@ -1,154 +1,243 @@
 import logging
-import httpx
-from typing import Dict, Any, List, Optional
+import json
+from typing import Dict, Any, List
 from uuid import UUID
 
 from django.conf import settings
-from django.core.cache import cache
 
 logger = logging.getLogger(__name__)
 
+
+def _get_groq_client():
+    from groq import Groq
+    return Groq(api_key=settings.GROQ_API_KEY)
+
+
+def _chat(messages: List[Dict[str, str]], temperature: float = 0.3) -> str:
+    """Send messages to Groq and return the text response."""
+    client = _get_groq_client()
+    response = client.chat.completions.create(
+        model=settings.GROQ_MODEL,
+        messages=messages,
+        temperature=temperature,
+        max_tokens=1024,
+    )
+    return response.choices[0].message.content.strip()
+
+
+def _parse_json(text: str) -> Dict[str, Any]:
+    """Extract and parse JSON from an LLM response, stripping markdown fences."""
+    start = text.find("{")
+    end = text.rfind("}") + 1
+    if start == -1 or end == 0:
+        raise ValueError(f"No JSON found in response: {text[:200]}")
+    return json.loads(text[start:end])
+
+
 class AIClient:
     """
-    Asynchronous HTTP Client connecting the Django Backend to the FastAPI AI Service.
-    Implements timeouts, error handling, and Redis caching.
+    Groq-powered AI client for ERP intelligence features.
+    Uses llama-3.3-70b-versatile via Groq's API for fast inference.
     """
-    
-    def __init__(self):
-        self.base_url = settings.AI_SERVICE_URL.rstrip('/')
-        # Default 5 second timeout to prevent hanging the Django WSGI/ASGI workers
-        self.timeout = httpx.Timeout(5.0, connect=2.0)
-        
-    async def get_health_score(self, company_id: UUID) -> Dict[str, Any]:
+
+    def get_health_score(self, company_id: UUID, metrics: Dict[str, Any] = None) -> Dict[str, Any]:
         """
-        Fetches the Business Health Score.
-        Caches the result for 1 hour to avoid re-aggregating complex DB queries on every dashboard load.
+        Generate a business health score and explanation based on company metrics.
         """
-        cache_key = f"ai_health_score_{company_id}"
-        
-        # 1. Check Redis Cache
+        if not settings.GROQ_API_KEY:
+            return self._fallback_health_score(company_id)
+
+        metrics_text = json.dumps(metrics or {}, indent=2) if metrics else "No metrics provided."
+
         try:
-            cached_result = await cache.aget(cache_key)
-            if cached_result:
-                logger.debug(f"Cache hit for health score: {company_id}")
-                return cached_result
+            messages = [
+                {
+                    "role": "system",
+                    "content": (
+                        "You are a senior ERP business analyst. Analyze company metrics and return "
+                        "a JSON object with these exact keys: score (float 0-100), status (one of: "
+                        "Excellent/Good/Fair/Poor), explanation (2-3 sentences), "
+                        "recommendations (list of 3 strings). Respond with JSON only."
+                    ),
+                },
+                {
+                    "role": "user",
+                    "content": f"Company ID: {company_id}\n\nMetrics:\n{metrics_text}",
+                },
+            ]
+            raw = _chat(messages)
+            data = _parse_json(raw)
+            data["company_id"] = str(company_id)
+            return data
+
         except Exception as e:
-            logger.warning(f"Cache read failed for health score: {str(e)}")
-            
-        # 2. Make Async HTTP Request
-        url = f"{self.base_url}/api/v1/health/score"
-        params = {"company_id": str(company_id)}
-        
-        try:
-            async with httpx.AsyncClient(timeout=self.timeout) as client:
-                response = await client.get(url, params=params)
-                response.raise_for_status()
-                data = response.json()
-                
-                # 3. Save to Redis Cache (3600 seconds = 1 hour)
-                try:
-                    await cache.aset(cache_key, data, timeout=3600)
-                except Exception as e:
-                    logger.warning(f"Cache write failed for health score: {str(e)}")
-                
-                return data
-                
-        except httpx.TimeoutException:
-            logger.error(f"AI Service Timeout for health score: {company_id}")
-            return self._fallback_health_score(company_id)
-            
-        except httpx.HTTPError as e:
-            logger.error(f"AI Service HTTP Error: {str(e)}")
+            logger.error(f"Groq health score error: {e}")
             return self._fallback_health_score(company_id)
 
-    async def forecast_demand(self, product_id: str, historical_sales: List[Dict[str, Any]], days: int = 30) -> Dict[str, Any]:
+    def forecast_demand(self, product_id: str, historical_sales: List[Dict[str, Any]], days: int = 30) -> Dict[str, Any]:
         """
-        Requests ARIMA demand forecasting.
-        Caches for 24 hours since forecasts don't change minute-by-minute.
+        Forecast demand for a product using historical sales data.
         """
-        # Hashing the request parameters could be safer, but product_id is sufficient for demo cache key
-        cache_key = f"ai_forecast_{product_id}_{days}"
-        
-        cached_result = await cache.aget(cache_key)
-        if cached_result:
-            return cached_result
-            
-        url = f"{self.base_url}/api/v1/forecast/demand/"
-        payload = {
-            "product_id": str(product_id),
-            "historical_sales": historical_sales,
-            "days_to_predict": days
-        }
-        
-        try:
-            # ML inference might take longer, increase timeout slightly
-            async with httpx.AsyncClient(timeout=10.0) as client:
-                response = await client.post(url, json=payload)
-                response.raise_for_status()
-                data = response.json()
-                
-                # Cache for 24 hours limit
-                await cache.aset(cache_key, data, timeout=86400)
-                return data
-                
-        except httpx.RequestError as e:
-            logger.error(f"AI Service Demand Forecast Error: {str(e)}")
-            raise e # Let Django handle or return generic error to frontend
+        if not settings.GROQ_API_KEY:
+            return {"error": "AI not configured", "forecast": []}
 
-    async def detect_anomalies(self, data: List[Dict[str, Any]], feature_cols: List[str]) -> Dict[str, Any]:
-        """
-        Runs Isolation Forest anomaly detection.
-        Usually run on demand, caching might not be appropriate if passing live changing arrays,
-        so we skip caching here.
-        """
-        url = f"{self.base_url}/api/v1/anomalies/detect"
-        payload = {
-            "data": data,
-            "feature_cols": feature_cols,
-            "contamination": 0.05
-        }
-        
+        history_text = json.dumps(historical_sales[-20:], indent=2)  # last 20 data points
+
         try:
-            async with httpx.AsyncClient(timeout=10.0) as client:
-                response = await client.post(url, json=payload)
-                response.raise_for_status()
-                return response.json()
-                
-        except httpx.RequestError as e:
-            logger.error(f"AI Service Anomaly Detection Error: {str(e)}")
+            messages = [
+                {
+                    "role": "system",
+                    "content": (
+                        "You are an expert demand forecasting analyst. Given historical sales data, "
+                        "return a JSON object with these keys: "
+                        "predicted_demand (integer, units for the next period), "
+                        "trend (one of: increasing/stable/decreasing), "
+                        "confidence (float 0-1), "
+                        "reorder_suggestion (string), "
+                        "insights (list of 2 strings). "
+                        "Respond with JSON only, no markdown."
+                    ),
+                },
+                {
+                    "role": "user",
+                    "content": (
+                        f"Product ID: {product_id}\n"
+                        f"Forecast horizon: {days} days\n"
+                        f"Historical sales (most recent last):\n{history_text}"
+                    ),
+                },
+            ]
+            raw = _chat(messages)
+            data = _parse_json(raw)
+            data["product_id"] = product_id
+            data["days"] = days
+            return data
+
+        except Exception as e:
+            logger.error(f"Groq demand forecast error: {e}")
+            return {"product_id": product_id, "error": str(e), "forecast": []}
+
+    def optimize_pricing(self, product_id: str, historical_data: List[Dict[str, float]],
+                         unit_cost: float, current_velocity: float) -> Dict[str, Any]:
+        """
+        Recommend optimal pricing based on cost, velocity, and historical performance.
+        """
+        if not settings.GROQ_API_KEY:
+            return {"error": "AI not configured"}
+
+        history_text = json.dumps(historical_data[-10:], indent=2)
+
+        try:
+            messages = [
+                {
+                    "role": "system",
+                    "content": (
+                        "You are a pricing optimization expert. Given product cost and sales velocity, "
+                        "return a JSON object with these keys: "
+                        "recommended_price (float), "
+                        "min_price (float), "
+                        "max_price (float), "
+                        "margin_percent (float), "
+                        "strategy (string: premium/competitive/penetration), "
+                        "rationale (string, 2 sentences). "
+                        "Respond with JSON only, no markdown."
+                    ),
+                },
+                {
+                    "role": "user",
+                    "content": (
+                        f"Product ID: {product_id}\n"
+                        f"Unit cost: ${unit_cost}\n"
+                        f"Current sales velocity: {current_velocity} units/day\n"
+                        f"Historical price/sales data:\n{history_text}"
+                    ),
+                },
+            ]
+            raw = _chat(messages)
+            data = _parse_json(raw)
+            data["product_id"] = product_id
+            return data
+
+        except Exception as e:
+            logger.error(f"Groq pricing optimization error: {e}")
+            return {"product_id": product_id, "error": str(e)}
+
+    def detect_anomalies(self, data: List[Dict[str, Any]], feature_cols: List[str]) -> Dict[str, Any]:
+        """
+        Detect anomalies and suspicious patterns in financial/operational data.
+        """
+        if not settings.GROQ_API_KEY:
+            return {"anomalies_detected": 0, "anomalous_data": []}
+
+        sample = json.dumps(data[:30], indent=2)
+
+        try:
+            messages = [
+                {
+                    "role": "system",
+                    "content": (
+                        "You are a financial anomaly detection expert. Analyze the provided data and "
+                        "return a JSON object with: "
+                        "anomalies_detected (integer), "
+                        "risk_level (one of: low/medium/high/critical), "
+                        "anomalous_indices (list of integers), "
+                        "findings (list of strings describing each anomaly), "
+                        "recommended_action (string). "
+                        "Respond with JSON only."
+                    ),
+                },
+                {
+                    "role": "user",
+                    "content": (
+                        f"Features to analyze: {', '.join(feature_cols)}\n\n"
+                        f"Data sample:\n{sample}"
+                    ),
+                },
+            ]
+            raw = _chat(messages)
+            return _parse_json(raw)
+
+        except Exception as e:
+            logger.error(f"Groq anomaly detection error: {e}")
             return {"anomalies_detected": 0, "anomalous_data": [], "error": str(e)}
 
-    async def optimize_pricing(self, product_id: str, historical_data: List[Dict[str, float]], unit_cost: float, current_velocity: float) -> Dict[str, Any]:
+    def generate_insight(self, context: str, question: str = None) -> str:
         """
-        Requests Intelligent Pricing bounds.
+        Generate a free-form AI insight or answer a business question about ERP data.
         """
-        url = f"{self.base_url}/api/v1/pricing/optimize"
-        payload = {
-            "product_id": str(product_id),
-            "historical_data": historical_data,
-            "unit_cost": unit_cost,
-            "current_velocity": current_velocity
-        }
-        
+        if not settings.GROQ_API_KEY:
+            return "AI insights unavailable. Configure GROQ_API_KEY to enable."
+
         try:
-            async with httpx.AsyncClient(timeout=5.0) as client:
-                response = await client.post(url, json=payload)
-                response.raise_for_status()
-                return response.json()
-                
-        except httpx.RequestError as e:
-            logger.error(f"AI Service Pricing Optimization Error: {str(e)}")
-            raise e
+            messages = [
+                {
+                    "role": "system",
+                    "content": (
+                        "You are a senior ERP business analyst. Give concise, actionable insights "
+                        "based on company data. Be specific, use numbers when available. "
+                        "Keep responses under 150 words."
+                    ),
+                },
+                {
+                    "role": "user",
+                    "content": f"Context:\n{context}\n\nQuestion: {question or 'What are the key insights and recommended actions?'}",
+                },
+            ]
+            return _chat(messages, temperature=0.5)
+
+        except Exception as e:
+            logger.error(f"Groq insight error: {e}")
+            return f"Unable to generate insight: {str(e)}"
 
     def _fallback_health_score(self, company_id: UUID) -> Dict[str, Any]:
-        """Safe fallback if FastAPI is down."""
         return {
             "company_id": str(company_id),
             "score": 0.0,
             "status": "Unknown",
-            "explanation": "AI Service currently unavailable. Try again later.",
-            "metrics": {}
+            "explanation": "AI service unavailable. Configure GROQ_API_KEY to enable.",
+            "recommendations": [],
         }
 
-# Singleton instance for easy importing
+
+# Singleton
 ai_client = AIClient()

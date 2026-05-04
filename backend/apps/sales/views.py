@@ -566,7 +566,6 @@ class OptimizePricingView(APIView):
     permission_classes = [IsAuthenticated, HasCompany]
 
     def post(self, request, *args, **kwargs):
-        from asgiref.sync import async_to_sync
         from utils.ai_client import ai_client
 
         unit_cost = float(request.data.get('unit_cost', 0))
@@ -582,7 +581,7 @@ class OptimizePricingView(APIView):
         ]
 
         try:
-            result = async_to_sync(ai_client.optimize_pricing)(
+            result = ai_client.optimize_pricing(
                 product_id='generic',
                 historical_data=historical_data,
                 unit_cost=unit_cost,

@@ -14,8 +14,16 @@ import {
     DollarSign,
     Users,
     BarChart3,
-    ChevronDown,
-    LogOut
+    LogOut,
+    ShoppingBag,
+    Factory,
+    Target,
+    Layers,
+    Shield,
+    TrendingUp,
+    Receipt,
+    BookOpen,
+    ChevronRight
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -24,6 +32,7 @@ interface NavItem {
     href: string;
     icon: any;
     roles?: string[];
+    badge?: string;
 }
 
 interface NavGroup {
@@ -37,6 +46,7 @@ const NAV_GROUPS: NavGroup[] = [
         label: "Overview",
         items: [
             { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+            { name: 'Analytics', href: '/analytics', icon: TrendingUp },
         ]
     },
     {
@@ -46,6 +56,21 @@ const NAV_GROUPS: NavGroup[] = [
             { name: 'Inventory', href: '/inventory', icon: Package },
             { name: 'Sales & Orders', href: '/sales', icon: ShoppingCart },
             { name: 'Customers', href: '/customers', icon: Users },
+            { name: 'Procurement', href: '/procurement', icon: ShoppingBag, roles: ['admin', 'manager', 'staff'] },
+        ]
+    },
+    {
+        label: "Manufacturing",
+        roles: ['admin', 'manager', 'staff'],
+        items: [
+            { name: 'Production', href: '/manufacturing', icon: Factory },
+        ]
+    },
+    {
+        label: "CRM",
+        roles: ['admin', 'manager', 'sales'],
+        items: [
+            { name: 'CRM & Leads', href: '/crm', icon: Target },
         ]
     },
     {
@@ -53,6 +78,7 @@ const NAV_GROUPS: NavGroup[] = [
         roles: ['admin', 'manager', 'finance', 'auditor'],
         items: [
             { name: 'Finance & Accounts', href: '/finance', icon: DollarSign },
+            { name: 'Asset Management', href: '/assets', icon: Layers },
             { name: 'Reports', href: '/reports', icon: BarChart3 },
         ]
     },
@@ -64,11 +90,18 @@ const NAV_GROUPS: NavGroup[] = [
         ]
     },
     {
-        label: "System",
-        roles: ['admin', 'manager'],
+        label: "Compliance",
+        roles: ['admin', 'auditor'],
         items: [
-            { name: 'Smart Reports', href: '/reports', icon: FileText, roles: ['admin'] },
-            { name: 'Settings', href: '/settings', icon: Settings, roles: ['admin'] },
+            { name: 'Audit Trail', href: '/audit', icon: Shield },
+        ]
+    },
+    {
+        label: "System",
+        roles: ['admin'],
+        items: [
+            { name: 'Settings', href: '/settings', icon: Settings },
+            { name: 'API Docs', href: '/docs', icon: BookOpen },
         ]
     }
 ];
@@ -76,6 +109,12 @@ const NAV_GROUPS: NavGroup[] = [
 export default function Sidebar() {
     const pathname = usePathname();
     const { user, logout } = useAuthStore();
+
+    const userRole = user?.role?.toLowerCase();
+
+    const visibleGroups = NAV_GROUPS.filter(group =>
+        !group.roles || (userRole && group.roles.includes(userRole))
+    );
 
     return (
         <div className="hidden lg:flex lg:flex-shrink-0">
@@ -91,15 +130,15 @@ export default function Sidebar() {
                 </div>
 
                 {/* Nav Links */}
-                <div className="flex flex-col h-0 flex-1 overflow-y-auto px-3 py-5 space-y-5">
-                    {NAV_GROUPS.filter(group => !group.roles || (user?.role && group.roles.includes(user.role))).map((group) => (
+                <div className="flex flex-col h-0 flex-1 overflow-y-auto px-3 py-5 space-y-5 scrollbar-thin">
+                    {visibleGroups.map((group) => (
                         <div key={group.label}>
                             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 px-3">
                                 {group.label}
                             </p>
                             <nav className="space-y-0.5">
                                 {group.items
-                                    .filter(item => !item.roles || (user?.role && item.roles.includes(user.role)))
+                                    .filter(item => !item.roles || (userRole && item.roles.includes(userRole)))
                                     .map((navItem) => {
                                         const isActive = pathname === navItem.href || pathname.startsWith(navItem.href + '/');
                                         return (
@@ -115,15 +154,30 @@ export default function Sidebar() {
                                                 `}
                                             >
                                                 <navItem.icon
-                                                    className={`flex-shrink-0 mr-3 h-4 w-4 transition-colors ${ isActive ? 'text-black' : 'text-slate-500 group-hover:text-slate-300'}`}
+                                                    className={`flex-shrink-0 mr-3 h-4 w-4 transition-colors ${isActive ? 'text-black' : 'text-slate-500 group-hover:text-slate-300'}`}
                                                 />
                                                 {navItem.name}
+                                                {navItem.badge && (
+                                                    <span className="ml-auto text-[10px] font-bold bg-brand-500/20 text-brand-400 px-1.5 py-0.5 rounded-full">
+                                                        {navItem.badge}
+                                                    </span>
+                                                )}
                                             </Link>
                                         );
                                     })}
                             </nav>
                         </div>
                     ))}
+                </div>
+
+                {/* Role Indicator */}
+                <div className="flex-shrink-0 px-5 py-3 border-t border-white/5">
+                    <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-[#E2FF00]" />
+                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                            {userRole || 'Unknown'} Access
+                        </span>
+                    </div>
                 </div>
 
                 {/* User Footer */}
@@ -149,4 +203,3 @@ export default function Sidebar() {
         </div>
     );
 }
-// Build trigger commit

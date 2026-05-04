@@ -46,8 +46,10 @@ export default function LoginPage() {
     } catch (err: any) {
       if (err.response?.status === 401) {
         setGlobalError("Invalid email or password.");
+      } else if (err.code === 'ERR_NETWORK' || err.code === 'ECONNREFUSED' || !err.response) {
+        setGlobalError("Cannot reach the server. Make sure the backend is running on port 8000.");
       } else {
-        setGlobalError("An unexpected error occurred. Please try again.");
+        setGlobalError(`Server error (${err.response?.status ?? 'unknown'}). Please try again.`);
       }
     }
   };

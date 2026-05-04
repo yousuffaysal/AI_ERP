@@ -41,12 +41,11 @@ export default function LandingPage() {
           CORE<span className="text-[#E2FF00] italic">.</span>ERP
         </div>
         <div className="flex gap-8 items-center">
-          <Link href="/docs" className="hidden sm:block text-sm font-bold tracking-widest text-[#A0A0A0] hover:text-[#E2FF00] transition-colors uppercase">
-            Documentation & Tutorials
-          </Link>
-          <Link href="/login" className="hidden sm:block text-sm font-bold tracking-widest text-[#A0A0A0] hover:text-white transition-colors uppercase">
-            Sign In
-          </Link>
+          <Link href="/about" className="hidden md:block text-sm font-bold tracking-widest text-[#A0A0A0] hover:text-[#E2FF00] transition-colors uppercase">About</Link>
+          <Link href="/pricing" className="hidden md:block text-sm font-bold tracking-widest text-[#A0A0A0] hover:text-[#E2FF00] transition-colors uppercase">Pricing</Link>
+          <Link href="/guide" className="hidden md:block text-sm font-bold tracking-widest text-[#A0A0A0] hover:text-[#E2FF00] transition-colors uppercase">Guide</Link>
+          <Link href="/contact" className="hidden md:block text-sm font-bold tracking-widest text-[#A0A0A0] hover:text-[#E2FF00] transition-colors uppercase">Contact</Link>
+          <Link href="/login" className="hidden sm:block text-sm font-bold tracking-widest text-[#A0A0A0] hover:text-white transition-colors uppercase">Sign In</Link>
           <Link href="/login" className="h-12 px-6 inline-flex items-center justify-center bg-[#E2FF00] text-black text-sm font-bold uppercase tracking-widest hover:bg-white transition-colors rounded-none">
             Access Terminal
           </Link>
@@ -324,14 +323,14 @@ export default function LandingPage() {
           </div>
           <div className="flex gap-16 md:gap-32 font-bold uppercase tracking-widest text-sm text-[#888888]">
             <div className="flex flex-col gap-6">
-              <Link href="/docs" className="hover:text-[#E2FF00] transition-colors">Documentation</Link>
-              <Link href="/login" className="hover:text-[#E2FF00] transition-colors">Access Terminal</Link>
-              <a href="#" className="hover:text-[#E2FF00] transition-colors">System Status</a>
+              <Link href="/about" className="hover:text-[#E2FF00] transition-colors">About</Link>
+              <Link href="/pricing" className="hover:text-[#E2FF00] transition-colors">Pricing</Link>
+              <Link href="/guide" className="hover:text-[#E2FF00] transition-colors">Guide</Link>
             </div>
             <div className="flex flex-col gap-6">
+              <Link href="/contact" className="hover:text-[#E2FF00] transition-colors">Contact</Link>
+              <Link href="/privacy" className="hover:text-[#E2FF00] transition-colors">Privacy</Link>
               <a href="#manifesto" className="hover:text-[#E2FF00] transition-colors">Manifesto</a>
-              <a href="#" className="hover:text-[#E2FF00] transition-colors">Privacy</a>
-              <a href="#" className="hover:text-[#E2FF00] transition-colors">Contact</a>
             </div>
           </div>
         </div>

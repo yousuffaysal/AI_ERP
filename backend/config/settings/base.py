@@ -304,6 +304,8 @@ CACHES = {
 }
 
 # ---------------------------------------------------------------------------
-# AI Microservice URL
+# AI Configuration (Groq)
 # ---------------------------------------------------------------------------
 AI_SERVICE_URL = env("AI_SERVICE_URL", default="http://localhost:8001")
+GROQ_API_KEY = env("GROQ_API_KEY", default="")
+GROQ_MODEL = env("GROQ_MODEL", default="llama-3.3-70b-versatile")
