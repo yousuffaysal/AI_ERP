@@ -170,8 +170,8 @@ export default function LandingPage() {
           >
             <div className="relative w-full h-full overflow-hidden flex items-center justify-center">
                <img 
-                 src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=2070" 
-                 className="absolute inset-0 w-full h-full object-cover opacity-30 grayscale mix-blend-multiply"
+                 src="/ai_neural_grid_background_1777916058914.png" 
+                 className="absolute inset-0 w-full h-full object-cover opacity-40 grayscale mix-blend-multiply"
                  alt="Neural Grid"
                />
                <div className="relative z-10 max-w-5xl text-center px-6">
@@ -204,24 +204,19 @@ export default function LandingPage() {
            transition={{ duration: 1.5 }}
            className="absolute inset-0 z-0"
          >
-            <img 
-              src="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=2070" 
-              className="w-full h-full object-cover opacity-20 scale-110"
-              alt="Data Circuits"
-            />
             {/* The Cinematic Data Storm Image */}
             <motion.div 
               className="absolute inset-0 z-10"
               style={{
-                backgroundImage: `url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=2072')`,
+                backgroundImage: `url('/digital_data_storm_background_1777916810113.png')`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
-                opacity: 0.4,
+                opacity: 0.6,
                 mixBlendMode: 'screen'
               }}
               animate={{ 
-                scale: [1, 1.1, 1],
-                filter: ['hue-rotate(0deg)', 'hue-rotate(30deg)', 'hue-rotate(0deg)']
+                scale: [1, 1.05, 1],
+                filter: ['hue-rotate(0deg)', 'hue-rotate(15deg)', 'hue-rotate(0deg)']
               }}
               transition={{ repeat: Infinity, duration: 20, ease: "linear" }}
             />
@@ -555,7 +550,7 @@ export default function LandingPage() {
                  className="relative aspect-video bg-[#0A0A0A] border border-white/5 rounded-3xl overflow-hidden group"
                >
                   <img 
-                    src="https://images.unsplash.com/photo-1558494949-ef010cbdcc51?auto=format&fit=crop&q=80&w=2000" 
+                    src="/global_datacenter_nodes_background_1777917280581.png" 
                     className="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:scale-110 transition-transform duration-[2s]"
                     alt="Datacenter"
                   />
