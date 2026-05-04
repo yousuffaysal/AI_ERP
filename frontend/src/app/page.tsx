@@ -23,9 +23,9 @@ export default function LandingPage() {
     offset: ["start end", "end start"]
   });
 
-  const maskSize = useTransform(revealProgress, [0.1, 0.9], ["20%", "150%"]);
-  const opacityReveal = useTransform(revealProgress, [0, 0.2, 0.9, 1], [0, 1, 1, 1]);
-  const imageScale = useTransform(revealProgress, [0.1, 0.9], [1.5, 1]);
+  const maskSize = useTransform(revealProgress, [0.3, 0.6], ["20%", "150%"]);
+  const opacityReveal = useTransform(revealProgress, [0.2, 0.3, 0.6, 0.7], [0, 1, 1, 1]);
+  const imageScale = useTransform(revealProgress, [0.3, 0.6], [1.5, 1]);
 
   return (
     <div ref={containerRef} className="min-h-screen bg-[#030303] text-[#EAEAEA] selection:bg-[#E2FF00] selection:text-black font-sans overflow-x-hidden">
@@ -152,7 +152,7 @@ export default function LandingPage() {
       </section>
 
       {/* NEW: Scroll Reveal Mask Section */}
-      <section ref={revealRef} className="relative z-10 h-[140vh] bg-[#030303]">
+      <section ref={revealRef} className="relative z-10 h-[110vh] bg-[#030303]">
         <div className="sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden">
           {/* Background Layer (Hidden) */}
           <div className="absolute inset-0 bg-[#0A0A0A] flex items-center justify-center">
