@@ -25,6 +25,7 @@ export default function LandingPage() {
 
   const maskSize = useTransform(revealProgress, [0.1, 0.9], ["20%", "150%"]);
   const opacityReveal = useTransform(revealProgress, [0, 0.2, 0.9, 1], [0, 1, 1, 1]);
+  const imageScale = useTransform(revealProgress, [0.1, 0.9], [1.5, 1]);
 
   return (
     <div ref={containerRef} className="min-h-screen bg-[#030303] text-[#EAEAEA] selection:bg-[#E2FF00] selection:text-black font-sans overflow-x-hidden">
@@ -169,9 +170,10 @@ export default function LandingPage() {
             }}
           >
             <div className="relative w-full h-full overflow-hidden flex items-center justify-center">
-               <img 
+               <motion.img 
                  src="/ai_neural_grid_background_1777916058914.png" 
                  className="absolute inset-0 w-full h-full object-cover opacity-40 grayscale mix-blend-multiply"
+                 style={{ scale: imageScale }}
                  alt="Neural Grid"
                />
                <div className="relative z-10 max-w-5xl text-center px-6">
