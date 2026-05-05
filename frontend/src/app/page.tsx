@@ -5,6 +5,9 @@ import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import { ArrowRight, Box, BrainCircuit, Fingerprint, Layers, Activity, LineChart, Globe, ShieldCheck, Zap, Cpu, Lock } from "lucide-react";
 import { useRef, useState, useEffect } from "react";
 import Footer from "@/components/Layout/Footer";
+import dynamic from "next/dynamic";
+
+const Threads = dynamic(() => import("@/components/Threads"), { ssr: false });
 
 export default function LandingPage() {
   const [isMounted, setIsMounted] = useState(false);
@@ -49,6 +52,16 @@ export default function LandingPage() {
              background: 'radial-gradient(circle, rgba(120,0,255,1) 0%, rgba(60,0,255,0.2) 40%, transparent 70%)',
              filter: 'blur(100px)'
            }}>
+      </div>
+
+      {/* Hero Threads Background */}
+      <div className="absolute inset-x-0 top-0 h-[100vh] z-0 pointer-events-none opacity-40 overflow-hidden">
+        <Threads
+          color={[0.7137254901960784, 1, 0.14901960784313725]}
+          amplitude={1}
+          distance={0}
+          enableMouseInteraction
+        />
       </div>
 
       {/* Navigation */}
