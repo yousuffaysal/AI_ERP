@@ -4,6 +4,7 @@ import Link from "next/link";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import { ArrowRight, Box, BrainCircuit, Fingerprint, Layers, Activity, LineChart, Globe, ShieldCheck, Zap, Cpu, Lock } from "lucide-react";
 import { useRef, useState, useEffect } from "react";
+import Footer from "@/components/Layout/Footer";
 
 export default function LandingPage() {
   const [isMounted, setIsMounted] = useState(false);
@@ -617,36 +618,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Massive Brutalist Footer */}
-      <footer className="relative z-10 bg-[#050505] text-[#EAEAEA] py-32 px-6 md:px-16 overflow-hidden">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-end gap-16 mb-24">
-          <div className="flex flex-col gap-4">
-            <h2 className="font-heading text-8xl md:text-[10rem] font-bold tracking-tighter text-white leading-none">CORE.</h2>
-            <p className="font-bold text-xl uppercase tracking-widest mt-2 px-2 text-[#E2FF00]">Enterprise OS</p>
-          </div>
-          <div className="flex gap-16 md:gap-32 font-bold uppercase tracking-widest text-sm text-[#888888]">
-            <div className="flex flex-col gap-6">
-              <Link href="/about" className="hover:text-[#E2FF00] transition-colors">About</Link>
-              <Link href="/pricing" className="hover:text-[#E2FF00] transition-colors">Pricing</Link>
-              <Link href="/guide" className="hover:text-[#E2FF00] transition-colors">Guide</Link>
-            </div>
-            <div className="flex flex-col gap-6">
-              <Link href="/contact" className="hover:text-[#E2FF00] transition-colors">Contact</Link>
-              <Link href="/privacy" className="hover:text-[#E2FF00] transition-colors">Privacy</Link>
-              <a href="#manifesto" className="hover:text-[#E2FF00] transition-colors">Manifesto</a>
-            </div>
-          </div>
-        </div>
-        
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center border-t border-[#222222] pt-8 text-[#555555] font-bold uppercase text-[10px] tracking-[0.3em]">
-          <div className="flex gap-8 mb-4 md:mb-0">
-            <span className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#E2FF00] animate-pulse" /> Neural Load: 14%</span>
-            <span className="flex items-center gap-2 text-white/20"><div className="w-1.5 h-1.5 rounded-full bg-blue-500" /> Active Nodes: 1,024</span>
-            <span className="flex items-center gap-2 text-white/20"><div className="w-1.5 h-1.5 rounded-full bg-purple-500" /> Latency: 0.4ms</span>
-          </div>
-          <p>© 2026 Foxmen Studio. All rights reserved. Built for precision.</p>
-        </div>
-      </footer>
+      {/* Modern Detailed Footer */}
+      <Footer />
     </div>
   );
 }

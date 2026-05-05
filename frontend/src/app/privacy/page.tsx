@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Shield, Lock, Eye, Trash2, Globe, FileText } from "lucide-react";
+import Footer from "@/components/Layout/Footer";
 
 const NAV_LINKS = [
     { label: "About", href: "/about" },
@@ -218,28 +219,7 @@ export default function PrivacyPage() {
                 </div>
             </section>
 
-            {/* Footer */}
-            <footer className="relative z-10 bg-[#050505] text-[#EAEAEA] py-20 px-6 md:px-16 mt-20 border-t border-[#1A1A1A]">
-                <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-end gap-12 mb-12">
-                    <Link href="/" className="font-heading text-6xl font-bold tracking-tighter text-white leading-none">CORE.</Link>
-                    <div className="flex gap-16 font-bold uppercase tracking-widest text-sm text-[#888888]">
-                        <div className="flex flex-col gap-4">
-                            <Link href="/about" className="hover:text-[#E2FF00] transition-colors">About</Link>
-                            <Link href="/pricing" className="hover:text-[#E2FF00] transition-colors">Pricing</Link>
-                            <Link href="/guide" className="hover:text-[#E2FF00] transition-colors">Guide</Link>
-                        </div>
-                        <div className="flex flex-col gap-4">
-                            <Link href="/contact" className="hover:text-[#E2FF00] transition-colors">Contact</Link>
-                            <Link href="/privacy" className="hover:text-[#E2FF00] transition-colors">Privacy</Link>
-                            <Link href="/login" className="hover:text-[#E2FF00] transition-colors">Sign In</Link>
-                        </div>
-                    </div>
-                </div>
-                <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center border-t border-[#222222] pt-8 text-[#555555] font-bold uppercase text-xs tracking-widest">
-                    <p>© 2026 Foxmen Studio. All rights reserved.</p>
-                    <p className="mt-4 md:mt-0">Built for precision.</p>
-                </div>
-            </footer>
+            <Footer />
         </div>
     );
 }
